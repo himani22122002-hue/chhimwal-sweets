@@ -9,7 +9,7 @@ const ProductCard = ({ product }) => {
       whileInView={{ opacity: 1, y: 0 }}
       whileHover={{ y: -8 }}
       transition={{ duration: 0.3 }}
-      className="bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden"
+      className="bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden flex flex-col"
     >
       <div className="h-48 overflow-hidden">
         <img
@@ -19,9 +19,11 @@ const ProductCard = ({ product }) => {
           onError={(e) => { e.target.src = 'https://placehold.co/400x300?text=Sweets'; }}
         />
       </div>
-      <div className="p-5">
-        <h3 className="text-xl font-bold text-[#7B1E2B] mb-1">{product.name}</h3>
-        <p className="text-sm text-gray-500 mb-2">{product.description}</p>
+      <div className="p-5 flex flex-col flex-grow">
+        <h3 className="text-xl font-bold text-[#7B1E2B]">{product.name}</h3>
+        <p className="text-sm text-gray-500 mb-2">{product.weight}</p>
+        <p className="text-sm text-gray-600 mb-4 flex-grow">{product.description}</p>
+        
         <div className="flex justify-between items-center mb-4">
           <span className="text-lg font-bold text-[#D4AF37]">₹{product.price}</span>
           <div className="flex items-center text-sm text-gray-600">
@@ -29,7 +31,8 @@ const ProductCard = ({ product }) => {
             {product.rating}
           </div>
         </div>
-        <div className="flex gap-2">
+        
+        <div className="flex gap-2 mt-auto">
           <button className="flex-1 bg-[#7B1E2B] text-white py-2 rounded-lg text-sm font-semibold hover:bg-[#5a1620] transition-colors">
             Add to Cart
           </button>

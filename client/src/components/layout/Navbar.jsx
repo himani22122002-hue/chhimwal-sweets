@@ -13,7 +13,7 @@ const NAV_LINKS = [
 ];
 
 const CATEGORIES = [
-  'Baal Mithai', 'Singodi', 'Peda', 'Laddu', 'Besan Laddu', 'Milk Sweets', 'Jalebi'
+  'Baal Mithai', 'Singodi', 'Peda', 'Besan Laddu', 'Milk Sweets', 'Jalebi'
 ];
 
 export default function Navbar() {
