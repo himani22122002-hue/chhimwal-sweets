@@ -1,81 +1,127 @@
 import { motion } from "framer-motion";
-import heroImage from "../../assets/hero.png";
+import heroBanner from "../../assets/images/hero-banner.png";
 
 export const Hero = () => {
-  return (
-    <div className="bg-[#FFF8E7] text-[#7B1E2B] font-sans">
-      {/* Hero Section */}
-      <div className="container mx-auto px-6 py-16 md:py-24 flex flex-col md:flex-row items-center justify-between">
-        {/* Left Content */}
-        <motion.div 
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          className="md:w-1/2 space-y-6"
-        >
-          <span className="inline-block bg-[#D4AF37]/20 text-[#7B1E2B] px-4 py-1 rounded-full text-sm font-semibold tracking-wider uppercase">
-            Since 1998
-          </span>
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-            Authentic <span className="text-[#D4AF37]">Kumaoni</span> Sweets
-          </h1>
-          <p className="text-lg text-[#7B1E2B]/80 max-w-lg">
-            Experience the rich taste of handmade Baal Mithai, Singodi, Peda, Jalebi and other traditional sweets prepared with premium ingredients.
-          </p>
-          <div className="flex gap-4">
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-[#7B1E2B] text-white px-8 py-3 rounded-lg font-semibold shadow-lg hover:bg-[#5e1721] transition-colors"
-            >
-              Shop Now
-            </motion.button>
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="border-2 border-[#7B1E2B] text-[#7B1E2B] px-8 py-3 rounded-lg font-semibold hover:bg-[#7B1E2B]/10 transition-colors"
-            >
-              Explore Categories
-            </motion.button>
-          </div>
-        </motion.div>
+  const features = [
+    {
+      title: "Fresh Ingredients",
+      desc: "Sourced daily for premium quality",
+      icon: "🌿",
+    },
+    {
+      title: "Homemade Taste",
+      desc: "Authentic recipes, traditional methods",
+      icon: "🥣",
+    },
+    {
+      title: "Fast Delivery",
+      desc: "Delivered fresh to your doorstep",
+      icon: "🚚",
+    },
+  ];
 
-        {/* Right Image */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-          className="md:w-1/2 mt-12 md:mt-0 relative"
-        >
-          <div className="absolute inset-0 bg-[#D4AF37]/30 rounded-full filter blur-3xl opacity-50 animate-pulse"></div>
-          <img 
-            src={heroImage} 
-            alt="Authentic Kumaoni Sweets" 
-            className="relative z-10 w-full max-w-lg mx-auto rounded-3xl shadow-2xl"
-          />
-        </motion.div>
+  return (
+    <section className="bg-[#FFF8E7]">
+      {/* Hero */}
+      <div className="container mx-auto px-6 py-16 lg:py-24">
+        <div className="grid lg:grid-cols-2 items-center gap-12">
+
+          {/* Left Content */}
+          <motion.div
+            initial={{ opacity: 0, x: -60 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <span className="inline-block border border-[#D4AF37] text-[#7B1E2B] px-5 py-2 rounded-full text-sm font-semibold uppercase tracking-wider mb-6">
+              Since 1998
+            </span>
+
+            <h1 className="text-5xl lg:text-7xl font-extrabold leading-tight text-[#7B1E2B]">
+              Authentic{" "}
+              <span className="text-[#D4AF37]">
+                Kumaoni
+              </span>{" "}
+              Sweets
+            </h1>
+
+            <p className="mt-6 text-lg text-gray-700 leading-8 max-w-xl">
+              Experience the rich taste of handmade Baal Mithai,
+              Singodi, Peda, Jalebi and other traditional sweets
+              prepared with premium ingredients.
+            </p>
+
+            <div className="flex flex-wrap gap-5 mt-10">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-[#7B1E2B] text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:bg-[#5d1723]"
+              >
+                Shop Now →
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="border-2 border-[#7B1E2B] text-[#7B1E2B] px-8 py-4 rounded-xl font-semibold hover:bg-[#7B1E2B] hover:text-white transition"
+              >
+                Explore Categories
+              </motion.button>
+            </div>
+          </motion.div>
+{/* Right Hero Background */}
+          <motion.div
+  initial={{ opacity: 0, x: 60 }}
+  animate={{ opacity: 1, x: 0 }}
+  transition={{ duration: 0.8 }}
+  className="relative flex justify-end items-center"
+>
+  <div className="absolute w-[550px] h-[550px] rounded-full bg-[#F8E8B8] blur-[120px] opacity-50"></div>
+
+  <motion.img
+    src={heroBanner}
+    alt="Authentic Kumaoni Sweets"
+    draggable={false}
+    initial={{ y: 0 }}
+    animate={{ y: [0, -8, 0] }}
+    transition={{
+      duration: 5,
+      repeat: Infinity,
+      ease: "easeInOut",
+    }}
+    className="relative z-10 w-full max-w-[700px] lg:max-w-[760px] object-contain scale-110 select-none drop-shadow-[0_20px_45px_rgba(123,30,43,0.15)]"
+  />
+</motion.div>
+
+        </div>
       </div>
 
       {/* Feature Cards */}
-      <div className="container mx-auto px-6 pb-24">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { title: "Fresh Ingredients", desc: "Sourced daily for premium quality" },
-            { title: "Homemade Taste", desc: "Authentic recipes, traditional methods" },
-            { title: "Fast Delivery", desc: "Delivered fresh to your doorstep" },
-          ].map((feature, index) => (
-            <motion.div 
+      <div className="container mx-auto px-6 pb-20">
+        <div className="grid md:grid-cols-3 gap-8">
+
+          {features.map((feature, index) => (
+            <motion.div
               key={index}
-              whileHover={{ y: -10 }}
-              className="bg-white p-8 rounded-2xl shadow-lg border border-[#7B1E2B]/10"
+              whileHover={{ y: -8 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-2xl shadow-lg p-8 border border-[#F0E2C2]"
             >
-              <div className="text-[#D4AF37] text-3xl mb-4">✓</div>
-              <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-              <p className="text-[#7B1E2B]/70">{feature.desc}</p>
+              <div className="w-16 h-16 rounded-full bg-[#7B1E2B] text-white flex items-center justify-center text-3xl mb-5">
+                {feature.icon}
+              </div>
+
+              <h3 className="text-2xl font-bold text-[#7B1E2B]">
+                {feature.title}
+              </h3>
+
+              <p className="mt-3 text-gray-600 leading-7">
+                {feature.desc}
+              </p>
             </motion.div>
           ))}
+
         </div>
       </div>
-    </div>
+    </section>
   );
 };
