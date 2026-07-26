@@ -1,8 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const ProductCard = ({ product }) => {
+  const startingPrice = product.variants[0].price;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -21,11 +24,10 @@ const ProductCard = ({ product }) => {
       </div>
       <div className="p-5 flex flex-col flex-grow">
         <h3 className="text-xl font-bold text-[#7B1E2B]">{product.name}</h3>
-        <p className="text-sm text-gray-500 mb-2">{product.weight}</p>
-        <p className="text-sm text-gray-600 mb-4 flex-grow">{product.description}</p>
+        <p className="text-sm text-gray-500 mb-4 flex-grow">{product.description}</p>
         
         <div className="flex justify-between items-center mb-4">
-          <span className="text-lg font-bold text-[#D4AF37]">₹{product.price}</span>
+          <span className="text-lg font-bold text-[#D4AF37]">Starts at ₹{startingPrice}</span>
           <div className="flex items-center text-sm text-gray-600">
             <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
             {product.rating}
@@ -36,9 +38,9 @@ const ProductCard = ({ product }) => {
           <button className="flex-1 bg-[#7B1E2B] text-white py-2 rounded-lg text-sm font-semibold hover:bg-[#5a1620] transition-colors">
             Add to Cart
           </button>
-          <button className="flex-1 border border-[#7B1E2B] text-[#7B1E2B] py-2 rounded-lg text-sm font-semibold hover:bg-[#7B1E2B] hover:text-white transition-colors">
+          <Link to={`/products/${product.id}`} className="flex-1 border border-[#7B1E2B] text-[#7B1E2B] py-2 rounded-lg text-sm font-semibold text-center hover:bg-[#7B1E2B] hover:text-white transition-colors">
             View Details
-          </button>
+          </Link>
         </div>
       </div>
     </motion.div>

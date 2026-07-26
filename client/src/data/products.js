@@ -1,200 +1,80 @@
-import baall from "../assets/images/baall.png";
-import besan from "../assets/images/besan.png";
-import jalebii from "../assets/images/jalebii.png";
-import milkCake from "../assets/images/milk cake.png";
-import peda from "../assets/images/peda.png";
-import singodi from "../assets/images/singodi.png";
-
 export const products = [
-  // Baal Mithai
   {
-    id: 1,
-    name: "Baal Mithai",
-    category: "Baal Mithai",
-    weight: "250g",
-    price: 220,
+    id: 'baal-mithai',
+    name: 'Baal Mithai',
+    category: 'Baal Mithai',
+    image: '/assets/images/products/baal-mithai.png',
     rating: 4.8,
-    description: "Traditional Kumaoni sweet coated with sugar balls.",
-    image: baall,
+    description: 'Traditional Kumaoni sweet made from khoya, coated with sugar balls.',
+    variants: [
+      { weight: '250g', price: 220 },
+      { weight: '500g', price: 420 },
+      { weight: '1kg', price: 800 }
+    ]
   },
   {
-    id: 2,
-    name: "Baal Mithai",
-    category: "Baal Mithai",
-    weight: "500g",
-    price: 420,
-    rating: 4.8,
-    description: "Traditional Kumaoni sweet coated with sugar balls.",
-    image: baall,
-  },
-  {
-    id: 3,
-    name: "Baal Mithai",
-    category: "Baal Mithai",
-    weight: "1kg",
-    price: 800,
-    rating: 4.9,
-    description: "Traditional Kumaoni sweet coated with sugar balls.",
-    image: baall,
-  },
-
-  // Singodi
-  {
-    id: 4,
-    name: "Singodi",
-    category: "Singodi",
-    weight: "6 Pieces",
-    price: 250,
+    id: 'singodi',
+    name: 'Singodi',
+    category: 'Singodi',
+    image: '/assets/images/products/singodi.png',
     rating: 4.7,
-    description: "Traditional khoya sweet wrapped in fresh Malu leaves.",
-    image: singodi,
+    description: 'Delicious khoya sweet wrapped in fragrant Malu leaf.',
+    variants: [
+      { weight: '6 Pieces', price: 250 },
+      { weight: '12 Pieces', price: 480 },
+      { weight: '24 Pieces', price: 920 }
+    ]
   },
   {
-    id: 5,
-    name: "Singodi",
-    category: "Singodi",
-    weight: "12 Pieces",
-    price: 480,
-    rating: 4.8,
-    description: "Traditional khoya sweet wrapped in fresh Malu leaves.",
-    image: singodi,
-  },
-  {
-    id: 6,
-    name: "Singodi",
-    category: "Singodi",
-    weight: "24 Pieces",
-    price: 920,
-    rating: 4.9,
-    description: "Traditional khoya sweet wrapped in fresh Malu leaves.",
-    image: singodi,
-  },
-
-  // Peda
-  {
-    id: 7,
-    name: "Peda",
-    category: "Peda",
-    weight: "250g",
-    price: 180,
+    id: 'peda',
+    name: 'Peda',
+    category: 'Peda',
+    image: '/assets/images/products/peda.png',
     rating: 4.6,
-    description: "Soft and delicious milk peda made with pure khoya.",
-    image: peda,
+    description: 'Soft, creamy milk fudge prepared with pure desi ghee.',
+    variants: [
+      { weight: '250g', price: 180 },
+      { weight: '500g', price: 350 },
+      { weight: '1kg', price: 680 }
+    ]
   },
   {
-    id: 8,
-    name: "Peda",
-    category: "Peda",
-    weight: "500g",
-    price: 350,
-    rating: 4.7,
-    description: "Soft and delicious milk peda made with pure khoya.",
-    image: peda,
-  },
-  {
-    id: 9,
-    name: "Peda",
-    category: "Peda",
-    weight: "1kg",
-    price: 680,
-    rating: 4.8,
-    description: "Soft and delicious milk peda made with pure khoya.",
-    image: peda,
-  },
-
-  // Jalebi
-  {
-    id: 10,
-    name: "Jalebi",
-    category: "Jalebi",
-    weight: "250g",
-    price: 150,
+    id: 'jalebi',
+    name: 'Jalebi',
+    category: 'Jalebi',
+    image: '/assets/images/products/jalebi.png',
     rating: 4.5,
-    description: "Freshly prepared crispy jalebi soaked in sugar syrup.",
-    image: jalebii,
+    description: 'Freshly fried crispy, syrup-soaked golden spirals.',
+    variants: [
+      { weight: '250g', price: 150 },
+      { weight: '500g', price: 280 },
+      { weight: '1kg', price: 540 }
+    ]
   },
   {
-    id: 11,
-    name: "Jalebi",
-    category: "Jalebi",
-    weight: "500g",
-    price: 280,
+    id: 'besan-laddu',
+    name: 'Besan Laddu',
+    category: 'Besan Laddu',
+    image: '/assets/images/products/besan-laddu.png',
     rating: 4.6,
-    description: "Freshly prepared crispy jalebi soaked in sugar syrup.",
-    image: jalebii,
+    description: 'Roasted gram flour balls enriched with nuts and desi ghee.',
+    variants: [
+      { weight: '250g', price: 160 },
+      { weight: '500g', price: 300 },
+      { weight: '1kg', price: 580 }
+    ]
   },
   {
-    id: 12,
-    name: "Jalebi",
-    category: "Jalebi",
-    weight: "1kg",
-    price: 540,
+    id: 'milk-sweets',
+    name: 'Milk Sweets',
+    category: 'Milk Sweets',
+    image: '/assets/images/products/milk-sweets.png',
     rating: 4.7,
-    description: "Freshly prepared crispy jalebi soaked in sugar syrup.",
-    image: jalebii,
-  },
-
-  // Besan Laddu
-  {
-    id: 13,
-    name: "Besan Laddu",
-    category: "Besan Laddu",
-    weight: "250g",
-    price: 160,
-    rating: 4.6,
-    description: "Traditional besan laddu prepared with pure desi ghee.",
-    image: besan,
-  },
-  {
-    id: 14,
-    name: "Besan Laddu",
-    category: "Besan Laddu",
-    weight: "500g",
-    price: 300,
-    rating: 4.7,
-    description: "Traditional besan laddu prepared with pure desi ghee.",
-    image: besan,
-  },
-  {
-    id: 15,
-    name: "Besan Laddu",
-    category: "Besan Laddu",
-    weight: "1kg",
-    price: 580,
-    rating: 4.8,
-    description: "Traditional besan laddu prepared with pure desi ghee.",
-    image: besan,
-  },
-
-  // Milk Sweets
-  {
-    id: 16,
-    name: "Milk Cake",
-    category: "Milk Sweets",
-    weight: "250g",
-    price: 200,
-    rating: 4.7,
-    description: "Rich and creamy traditional milk cake.",
-    image: milkCake,
-  },
-  {
-    id: 17,
-    name: "Milk Cake",
-    category: "Milk Sweets",
-    weight: "500g",
-    price: 380,
-    rating: 4.8,
-    description: "Rich and creamy traditional milk cake.",
-    image: milkCake,
-  },
-  {
-    id: 18,
-    name: "Milk Cake",
-    category: "Milk Sweets",
-    weight: "1kg",
-    price: 750,
-    rating: 4.9,
-    description: "Rich and creamy traditional milk cake.",
-    image: milkCake,
-  },
+    description: 'A luxurious assortment of rich, creamy milk-based delights.',
+    variants: [
+      { weight: '250g', price: 200 },
+      { weight: '500g', price: 380 },
+      { weight: '1kg', price: 750 }
+    ]
+  }
 ];
