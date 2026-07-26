@@ -12,9 +12,16 @@ const NAV_LINKS = [
   { name: 'Contact', path: '/contact' },
 ];
 
-const CATEGORIES = [
-  'Baal Mithai', 'Singodi', 'Peda', 'Besan Laddu', 'Milk Sweets', 'Jalebi'
-];
+const CATEGORY_MAP = {
+  'Baal Mithai': 'baal-mithai',
+  'Singodi': 'singodi',
+  'Peda': 'peda',
+  'Besan Laddu': 'besan-laddu',
+  'Milk Sweets': 'milk-sweets',
+  'Jalebi': 'jalebi'
+};
+
+const CATEGORIES = Object.keys(CATEGORY_MAP);
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -74,7 +81,7 @@ export default function Navbar() {
                 </button>
                 <div className="absolute top-full left-0 mt-2 w-48 bg-[#FFF8E7] rounded-xl shadow-2xl py-2 border border-[#D4AF37]/20 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 group-focus-within:translate-y-0">
                   {CATEGORIES.map((cat) => (
-                    <NavLink key={cat} to={`/products?category=${cat}`} className="block px-4 py-2 text-gray-700 hover:text-[#7B1E2B] hover:bg-[#FDF3D5] transition-colors">
+                    <NavLink key={cat} to={`/products/${CATEGORY_MAP[cat]}`} className="block px-4 py-2 text-gray-700 hover:text-[#7B1E2B] hover:bg-[#FDF3D5] transition-colors">
                       {cat}
                     </NavLink>
                   ))}
@@ -110,7 +117,7 @@ export default function Navbar() {
              link.isDropdown ? (
                 <div key={link.name} className="flex flex-col gap-2">
                     <span className="text-xl font-bold text-[#7B1E2B]">{link.name}</span>
-                    {CATEGORIES.map(cat => <NavLink key={cat} to={`/products?category=${cat}`} className="pl-4 text-gray-600" onClick={() => setIsMenuOpen(false)}>{cat}</NavLink>)}
+                    {CATEGORIES.map(cat => <NavLink key={cat} to={`/products/${CATEGORY_MAP[cat]}`} className="pl-4 text-gray-600" onClick={() => setIsMenuOpen(false)}>{cat}</NavLink>)}
                 </div>
              ) : (
                 <NavLink key={link.name} to={link.path} className="text-xl font-medium text-gray-700" onClick={() => setIsMenuOpen(false)}>{link.name}</NavLink>
