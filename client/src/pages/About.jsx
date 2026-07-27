@@ -1,8 +1,21 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect } from 'react';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Award, Leaf, ShieldCheck, Heart, ChefHat, Flame, Truck, Users, Calendar, Utensils } from 'lucide-react';
 import aboutImage from "../assets/images/About.png";
+
+const Counter = ({ from, to }) => {
+  const count = useMotionValue(from);
+  const rounded = useTransform(count, (latest) => Math.round(latest));
+
+  useEffect(() => {
+    const controls = animate(count, to, { duration: 2 });
+    return () => controls.stop();
+  }, [count, to]);
+
+  return <motion.span>{rounded}</motion.span>;
+};
+
 const About = () => {
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -15,10 +28,10 @@ const About = () => {
   };
 
   const stats = [
-    { label: 'Years of Experience', value: '25+', icon: Calendar },
-    { label: 'Happy Customers', value: '50,000+', icon: Users },
-    { label: 'Traditional Recipes', value: '100+', icon: Utensils },
-    { label: 'Daily Orders', value: '500+', icon: Truck },
+    { label: 'Years of Experience', value: 25, icon: Calendar, suffix: '+' },
+    { label: 'Happy Customers', value: 1000, icon: Users, suffix: '+' },
+    { label: 'Traditional Recipes', value: 10, icon: Utensils, suffix: '+' },
+    { label: 'Daily Orders', value: 50, icon: Truck, suffix: '+' },
   ];
 
   const processSteps = [
@@ -59,10 +72,10 @@ const About = () => {
           </div>
           <div className="rounded-3xl overflow-hidden shadow-2xl">
             <img
-  src={aboutImage}
-  alt="Handmade Sweets"
-  className="w-full h-[450px] object-cover rounded-3xl"
-/>
+              src={aboutImage}
+              alt="Handmade Sweets"
+              className="w-full h-[450px] object-cover rounded-3xl"
+            />
           </div>
         </motion.div>
       </section>
@@ -101,12 +114,22 @@ const About = () => {
           </div>
         </div>
         <div>
-          <h2 className="text-4xl font-bold mb-12">Our Impact</h2>
+          <h2 className="text-4xl font-bold mb-6">Our Impact</h2>
+          <p className="text-gray-600 mb-12 italic">Proudly serving authentic Kumaoni sweets with quality and tradition since 1998.</p>
           <div className="grid grid-cols-2 gap-6">
             {stats.map((stat, i) => (
-              <motion.div variants={itemVariants} key={i} className="p-6 bg-[#7B1E2B] text-white rounded-2xl shadow-lg">
+              <motion.div 
+                variants={itemVariants} 
+                key={i} 
+                className="p-6 bg-[#7B1E2B] text-white rounded-2xl shadow-lg cursor-pointer"
+                whileHover={{ y: -5, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
+                transition={{ duration: 0.3 }}
+              >
                 <stat.icon className="w-8 h-8 text-[#D4AF37] mb-3" />
-                <div className="text-3xl font-bold mb-1">{stat.value}</div>
+                <div className="text-3xl font-bold mb-1">
+                  <Counter from={0} to={stat.value} />
+                  {stat.suffix}
+                </div>
                 <div className="text-sm opacity-80">{stat.label}</div>
               </motion.div>
             ))}
