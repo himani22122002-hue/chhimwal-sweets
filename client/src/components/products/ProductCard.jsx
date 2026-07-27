@@ -2,9 +2,16 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
 
 const ProductCard = ({ product }) => {
+  const { addToCart } = useCart();
   const startingPrice = product.variants[0].price;
+
+  const handleAddToCart = () => {
+    addToCart(product, product.variants[0]);
+    // Optionally add toast here
+  };
 
   return (
     <motion.div
@@ -35,7 +42,10 @@ const ProductCard = ({ product }) => {
         </div>
         
         <div className="flex gap-2 mt-auto">
-          <button className="flex-1 bg-[#7B1E2B] text-white py-2 rounded-lg text-sm font-semibold hover:bg-[#5a1620] transition-colors">
+          <button 
+            onClick={handleAddToCart}
+            className="flex-1 bg-[#7B1E2B] text-white py-2 rounded-lg text-sm font-semibold hover:bg-[#5a1620] transition-colors"
+          >
             Add to Cart
           </button>
           <Link to={`/products/${product.id}`} className="flex-1 border border-[#7B1E2B] text-[#7B1E2B] py-2 rounded-lg text-sm font-semibold text-center hover:bg-[#7B1E2B] hover:text-white transition-colors">

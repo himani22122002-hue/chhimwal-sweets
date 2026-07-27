@@ -4,12 +4,14 @@ import { motion } from 'framer-motion';
 import { Star, Minus, Plus, ShoppingCart, Zap, Package, Truck, Award } from 'lucide-react';
 import { products } from '../data/products';
 import ProductCard from '../components/products/ProductCard';
+import { useCart } from '../context/CartContext';
 
 const ProductDetails = () => {
   const { id } = useParams();
   const product = products.find((p) => p.id === id);
   const [selectedVariant, setSelectedVariant] = useState(product?.variants[0]);
   const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
 
   if (!product) {
     return (
@@ -18,6 +20,10 @@ const ProductDetails = () => {
       </div>
     );
   }
+
+  const handleAddToCart = () => {
+    addToCart(product, selectedVariant, quantity);
+  };
 
   const relatedProducts = products
     .filter((p) => p.category === product.category && p.id !== product.id)
@@ -83,7 +89,10 @@ const ProductDetails = () => {
                 <span className="px-4 font-bold text-lg w-12 text-center">{quantity}</span>
                 <button onClick={() => setQuantity(quantity + 1)} className="p-3 text-[#7B1E2B] hover:bg-[#D4AF37]/10"><Plus size={18}/></button>
               </div>
-              <button className="flex-1 flex items-center justify-center gap-2 bg-[#7B1E2B] text-white py-3 rounded-lg font-bold hover:bg-[#5a1620] transition-colors">
+              <button 
+                onClick={handleAddToCart}
+                className="flex-1 flex items-center justify-center gap-2 bg-[#7B1E2B] text-white py-3 rounded-lg font-bold hover:bg-[#5a1620] transition-colors"
+              >
                 <ShoppingCart size={20}/> Add to Cart
               </button>
               <button className="flex-1 flex items-center justify-center gap-2 bg-[#D4AF37] text-white py-3 rounded-lg font-bold hover:bg-[#b8952b] transition-colors">

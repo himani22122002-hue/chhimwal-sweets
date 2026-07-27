@@ -2,6 +2,7 @@ import logo from "../../assets/images/logo.png";
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Menu, X, Search, Heart, ShoppingCart, ChevronDown } from 'lucide-react';
+import { useCart } from '../../context/CartContext';
 
 const NAV_LINKS = [
   { name: 'Home', path: '/' },
@@ -26,6 +27,7 @@ const CATEGORIES = Object.keys(CATEGORY_MAP);
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { totalItems } = useCart();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -53,7 +55,9 @@ export default function Navbar() {
       <button aria-label="Wishlist" className="text-gray-700 hover:text-[#7B1E2B]"><Heart size={22} /></button>
       <NavLink to="/cart" className="relative text-gray-700 hover:text-[#7B1E2B]" aria-label="Cart">
         <ShoppingCart size={22} />
-        <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">0</span>
+        {totalItems > 0 && (
+          <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">{totalItems}</span>
+        )}
       </NavLink>
       <button className="bg-[#7B1E2B] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#D4AF37] transition-all">
         Login / Register
@@ -110,7 +114,7 @@ export default function Navbar() {
         <div className="flex flex-col gap-4 mb-8">
             <button className="flex items-center gap-3 text-lg font-medium text-gray-700"><Search size={20} /> Search</button>
             <button className="flex items-center gap-3 text-lg font-medium text-gray-700"><Heart size={20} /> Wishlist</button>
-            <NavLink to="/cart" className="flex items-center gap-3 text-lg font-medium text-gray-700"><ShoppingCart size={20} /> Cart</NavLink>
+            <NavLink to="/cart" className="flex items-center gap-3 text-lg font-medium text-gray-700" onClick={() => setIsMenuOpen(false)}><ShoppingCart size={20} /> Cart ({totalItems})</NavLink>
         </div>
         <div className="flex flex-col gap-6 border-t pt-6">
           {NAV_LINKS.map((link) => (
