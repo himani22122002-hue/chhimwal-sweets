@@ -1,5 +1,6 @@
 import React from 'react';
 import { useCart } from '../../context/CartContext';
+import { Link } from 'react-router-dom';
 
 const CartSummary = () => {
   const { subtotal, clearCart } = useCart();
@@ -26,9 +27,12 @@ const CartSummary = () => {
         </div>
       </div>
       <div className="mt-6 space-y-3">
-        <button className="w-full bg-[#7B1E2B] text-white py-3 rounded-lg font-semibold hover:bg-[#601722] transition">
+        <Link 
+          to="/checkout"
+          className="block w-full text-center bg-[#7B1E2B] text-white py-3 rounded-lg font-semibold hover:bg-[#601722] transition"
+        >
           Proceed to Checkout
-        </button>
+        </Link>
         <button
           onClick={clearCart}
           className="w-full bg-gray-100 text-[#7B1E2B] py-2 rounded-lg font-medium hover:bg-gray-200 transition"
