@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Star, Minus, Plus, ShoppingCart, Zap, Package, Truck, Award } from 'lucide-react';
 import { products } from '../data/products';
 import ProductCard from '../components/products/ProductCard';
 import { useCart } from '../context/CartContext';
+import RatingSummary from '../components/reviews/RatingSummary';
+import ReviewCard from '../components/reviews/ReviewCard';
+import ReviewForm from '../components/reviews/ReviewForm';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -12,6 +15,22 @@ const ProductDetails = () => {
   const [selectedVariant, setSelectedVariant] = useState(product?.variants[0]);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+
+  const [reviews, setReviews] = useState(() => {
+    const saved = localStorage.getItem(`reviews-${id}`);
+    return saved ? JSON.parse(saved) : [
+      { id: 1, name: "Rahul S.", rating: 5, date: "2026-07-20", title: "Excellent Taste!", message: "Very authentic Baal Mithai, reminds me of home." },
+      { id: 2, name: "Priya K.", rating: 4, date: "2026-07-22", title: "Good quality", message: "Fresh and well-packaged. Will order again." }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem(`reviews-${id}`, JSON.stringify(reviews));
+  }, [reviews, id]);
+
+  const handleAddReview = (newReview) => {
+    setReviews([ { id: Date.now(), ...newReview }, ...reviews ]);
+  };
 
   if (!product) {
     return (
@@ -109,9 +128,22 @@ const ProductDetails = () => {
           </motion.div>
         </div>
 
+        {/* Reviews Section */}
+        <div className="border-t border-[#7B1E2B]/10 pt-16 grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div>
+                <RatingSummary reviews={reviews} />
+                <div className="mt-8">
+                    {reviews.map(r => <ReviewCard key={r.id} review={r} />)}
+                </div>
+            </div>
+            <div>
+                <ReviewForm onAddReview={handleAddReview} />
+            </div>
+        </div>
+
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <div className="border-t border-[#7B1E2B]/10 pt-16">
+          <div className="border-t border-[#7B1E2B]/10 pt-16 mt-16">
             <h2 className="text-3xl font-extrabold text-[#7B1E2B] mb-10 text-center">You May Also Like</h2>
             <motion.div 
               className="flex gap-6 overflow-x-auto pb-6 snap-x scrollbar-hide"
