@@ -9,6 +9,9 @@ import OrderSuccess from '../pages/OrderSuccess';
 import About from '../pages/About';
 import Contact from '../pages/Contact';
 import Gallery from '../pages/Gallery';
+import Login from '../pages/Login';
+import Register from '../pages/Register';
+import ForgotPassword from '../pages/ForgotPassword';
 import NotFound from '../pages/NotFound';
 
 export default function AppRoutes() {
@@ -24,8 +27,11 @@ export default function AppRoutes() {
         <Route path="about" element={<About />} />
         <Route path="gallery" element={<Gallery />} />
         <Route path="contact" element={<Contact />} />
-        <Route path="*" element={<NotFound />} />
       </Route>
+      <Route path="login" element={<Login />} />
+      <Route path="register" element={<Register />} />
+      <Route path="forgot-password" element={<ForgotPassword />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

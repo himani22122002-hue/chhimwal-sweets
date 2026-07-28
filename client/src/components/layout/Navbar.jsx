@@ -59,9 +59,9 @@ export default function Navbar() {
           <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">{totalItems}</span>
         )}
       </NavLink>
-      <button className="bg-[#7B1E2B] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#D4AF37] transition-all">
+      <NavLink to="/login" className="bg-[#7B1E2B] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#D4AF37] transition-all">
         Login / Register
-      </button>
+      </NavLink>
     </div>
   );
 
@@ -127,7 +127,7 @@ export default function Navbar() {
                 <NavLink key={link.name} to={link.path} className="text-xl font-medium text-gray-700" onClick={() => setIsMenuOpen(false)}>{link.name}</NavLink>
              )
           ))}
-          <button className="w-full bg-[#7B1E2B] text-white py-3 rounded-full font-semibold mt-4">Login / Register</button>
+          <NavLink to="/login" className="w-full bg-[#7B1E2B] text-white py-3 rounded-full font-semibold mt-4 text-center" onClick={() => setIsMenuOpen(false)}>Login / Register</NavLink>
         </div>
       </div>
     </header>
