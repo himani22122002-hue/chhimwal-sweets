@@ -4,6 +4,7 @@ import { NavLink } from 'react-router-dom';
 import { Menu, X, Search, Heart, ShoppingCart, ChevronDown } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
+import SearchModal from '../search/SearchModal';
 
 const NAV_LINKS = [
   { name: 'Home', path: '/' },
@@ -28,6 +29,7 @@ const CATEGORIES = Object.keys(CATEGORY_MAP);
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { totalItems } = useCart();
   const { wishlist } = useWishlist();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -39,11 +41,16 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = isMenuOpen ? 'hidden' : 'unset';
-    const handleEsc = (e) => { if (e.key === 'Escape') setIsMenuOpen(false); };
+    document.body.style.overflow = isMenuOpen || isSearchOpen ? 'hidden' : 'unset';
+    const handleEsc = (e) => { 
+        if (e.key === 'Escape') {
+            setIsMenuOpen(false);
+            setIsSearchOpen(false);
+        }
+    };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isSearchOpen]);
 
   const navLinkClass = ({ isActive }) =>
     `text-lg font-medium transition-all duration-300 py-1 border-b-2 ${
@@ -54,7 +61,7 @@ export default function Navbar() {
 
   const renderDesktopActions = () => (
     <div className="hidden lg:flex items-center gap-5">
-      <button aria-label="Search" className="text-gray-700 hover:text-[#7B1E2B]"><Search size={22} /></button>
+      <button aria-label="Search" onClick={() => setIsSearchOpen(true)} className="text-gray-700 hover:text-[#7B1E2B]"><Search size={22} /></button>
       <NavLink to="/wishlist" className="relative text-gray-700 hover:text-[#7B1E2B]" aria-label="Wishlist">
         <Heart size={22} />
         {wishlist.length > 0 && (
@@ -83,12 +90,8 @@ export default function Navbar() {
     <header className={`sticky top-0 z-50 bg-[#FFF8E7] transition-all duration-300 ${isScrolled ? 'shadow-md py-2' : 'shadow-none py-4'}`}>
       <nav className="container mx-auto px-4 flex items-center justify-between">
         <NavLink to="/" className="flex items-center">
-  <img
-    src={logo}
-    alt="Chhimwal Sweets"
-    className="h-16 w-auto object-contain"
-  />
-</NavLink>
+            <img src={logo} alt="Chhimwal Sweets" className="h-16 w-auto object-contain" />
+        </NavLink>
 
         <div className="hidden lg:flex items-center gap-8">
           {NAV_LINKS.map((link) => (
@@ -126,7 +129,7 @@ export default function Navbar() {
           <button onClick={() => setIsMenuOpen(false)} aria-label="Close Menu"><X size={28} className="text-[#7B1E2B]" /></button>
         </div>
         <div className="flex flex-col gap-4 mb-8">
-            <button className="flex items-center gap-3 text-lg font-medium text-gray-700"><Search size={20} /> Search</button>
+            <button className="flex items-center gap-3 text-lg font-medium text-gray-700" onClick={() => { setIsMenuOpen(false); setIsSearchOpen(true); }}><Search size={20} /> Search</button>
             <NavLink to="/wishlist" className="flex items-center gap-3 text-lg font-medium text-gray-700" onClick={() => setIsMenuOpen(false)}><Heart size={20} /> Wishlist ({wishlist.length})</NavLink>
             <NavLink to="/cart" className="flex items-center gap-3 text-lg font-medium text-gray-700" onClick={() => setIsMenuOpen(false)}><ShoppingCart size={20} /> Cart ({totalItems})</NavLink>
         </div>
@@ -144,6 +147,9 @@ export default function Navbar() {
           <NavLink to="/login" className="w-full bg-[#7B1E2B] text-white py-3 rounded-full font-semibold mt-4 text-center" onClick={() => setIsMenuOpen(false)}>Login / Register</NavLink>
         </div>
       </div>
+      
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );
 }
+
