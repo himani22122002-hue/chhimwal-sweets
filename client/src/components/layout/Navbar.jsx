@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Menu, X, Search, Heart, ShoppingCart, ChevronDown } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useWishlist } from '../../context/WishlistContext';
 
 const NAV_LINKS = [
   { name: 'Home', path: '/' },
@@ -28,6 +29,8 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { totalItems } = useCart();
+  const { wishlist } = useWishlist();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -49,13 +52,15 @@ export default function Navbar() {
         : 'text-gray-700 border-transparent hover:text-[#7B1E2B]'
     }`;
 
-  // Add a temporary state to simulate logged-in status
-const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-const renderDesktopActions = () => (
+  const renderDesktopActions = () => (
     <div className="hidden lg:flex items-center gap-5">
       <button aria-label="Search" className="text-gray-700 hover:text-[#7B1E2B]"><Search size={22} /></button>
-      <button aria-label="Wishlist" className="text-gray-700 hover:text-[#7B1E2B]"><Heart size={22} /></button>
+      <NavLink to="/wishlist" className="relative text-gray-700 hover:text-[#7B1E2B]" aria-label="Wishlist">
+        <Heart size={22} />
+        {wishlist.length > 0 && (
+          <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">{wishlist.length}</span>
+        )}
+      </NavLink>
       <NavLink to="/cart" className="relative text-gray-700 hover:text-[#7B1E2B]" aria-label="Cart">
         <ShoppingCart size={22} />
         {totalItems > 0 && (
@@ -122,7 +127,7 @@ const renderDesktopActions = () => (
         </div>
         <div className="flex flex-col gap-4 mb-8">
             <button className="flex items-center gap-3 text-lg font-medium text-gray-700"><Search size={20} /> Search</button>
-            <button className="flex items-center gap-3 text-lg font-medium text-gray-700"><Heart size={20} /> Wishlist</button>
+            <NavLink to="/wishlist" className="flex items-center gap-3 text-lg font-medium text-gray-700" onClick={() => setIsMenuOpen(false)}><Heart size={20} /> Wishlist ({wishlist.length})</NavLink>
             <NavLink to="/cart" className="flex items-center gap-3 text-lg font-medium text-gray-700" onClick={() => setIsMenuOpen(false)}><ShoppingCart size={20} /> Cart ({totalItems})</NavLink>
         </div>
         <div className="flex flex-col gap-6 border-t pt-6">

@@ -1,16 +1,23 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
+import { Star, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { useWishlist } from '../../context/WishlistContext';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const startingPrice = product.variants[0].price;
+  const isWishlisted = isInWishlist(product.id);
 
   const handleAddToCart = () => {
     addToCart(product, product.variants[0]);
-    // Optionally add toast here
+  };
+
+  const toggleWishlist = () => {
+    if (isWishlisted) removeFromWishlist(product.id);
+    else addToWishlist(product);
   };
 
   return (
@@ -19,14 +26,19 @@ const ProductCard = ({ product }) => {
       whileInView={{ opacity: 1, y: 0 }}
       whileHover={{ y: -8 }}
       transition={{ duration: 0.3 }}
-      className="bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden flex flex-col"
+      className="bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden flex flex-col relative"
     >
+      <button 
+        onClick={toggleWishlist}
+        className="absolute top-4 right-4 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full transition-colors"
+      >
+        <Heart size={20} className={`${isWishlisted ? 'fill-[#7B1E2B] text-[#7B1E2B]' : 'text-gray-500'}`} />
+      </button>
       <div className="h-48 overflow-hidden">
         <img
           src={product.image}
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-          onError={(e) => { e.target.src = 'https://placehold.co/400x300?text=Sweets'; }}
         />
       </div>
       <div className="p-5 flex flex-col flex-grow">
