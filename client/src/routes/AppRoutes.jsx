@@ -12,6 +12,7 @@ import Gallery from '../pages/Gallery';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import ForgotPassword from '../pages/ForgotPassword';
+import Profile from '../pages/Profile';
 import NotFound from '../pages/NotFound';
 
 export default function AppRoutes() {
@@ -27,6 +28,7 @@ export default function AppRoutes() {
         <Route path="about" element={<About />} />
         <Route path="gallery" element={<Gallery />} />
         <Route path="contact" element={<Contact />} />
+        <Route path="profile" element={<Profile />} />
       </Route>
       <Route path="login" element={<Login />} />
       <Route path="register" element={<Register />} />

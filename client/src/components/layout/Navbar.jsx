@@ -49,7 +49,10 @@ export default function Navbar() {
         : 'text-gray-700 border-transparent hover:text-[#7B1E2B]'
     }`;
 
-  const renderDesktopActions = () => (
+  // Add a temporary state to simulate logged-in status
+const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+const renderDesktopActions = () => (
     <div className="hidden lg:flex items-center gap-5">
       <button aria-label="Search" className="text-gray-700 hover:text-[#7B1E2B]"><Search size={22} /></button>
       <button aria-label="Wishlist" className="text-gray-700 hover:text-[#7B1E2B]"><Heart size={22} /></button>
@@ -59,9 +62,15 @@ export default function Navbar() {
           <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">{totalItems}</span>
         )}
       </NavLink>
-      <NavLink to="/login" className="bg-[#7B1E2B] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#D4AF37] transition-all">
-        Login / Register
-      </NavLink>
+      {isLoggedIn ? (
+        <NavLink to="/profile" className="text-[#7B1E2B] hover:text-[#D4AF37]">
+            <img src="https://ui-avatars.com/api/?name=John+Doe&background=7B1E2B&color=FFF8E7" alt="Profile" className="h-10 w-10 rounded-full" />
+        </NavLink>
+      ) : (
+        <NavLink to="/login" className="bg-[#7B1E2B] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#D4AF37] transition-all">
+            Login / Register
+        </NavLink>
+      )}
     </div>
   );
 
