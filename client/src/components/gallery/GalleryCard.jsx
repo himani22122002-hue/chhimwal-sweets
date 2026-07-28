@@ -1,15 +1,25 @@
 import { motion } from "framer-motion";
+import { Trash2 } from "lucide-react";
 
-const GalleryCard = ({ item, onClick }) => {
+const GalleryCard = ({ item, onClick, onDelete }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       whileHover={{ scale: 1.05 }}
+      exit={{ opacity: 0, scale: 0.8 }}
       onClick={() => onClick(item)}
-      className="bg-white rounded-2xl overflow-hidden shadow-lg cursor-pointer transition-shadow duration-300 hover:shadow-2xl"
+      className="bg-white rounded-2xl overflow-hidden shadow-lg cursor-pointer transition-shadow duration-300 hover:shadow-2xl relative"
     >
+      {onDelete && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
+          className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 z-10"
+        >
+          <Trash2 size={16} />
+        </button>
+      )}
       <div className="relative h-64 overflow-hidden">
         <img
           src={item.image}

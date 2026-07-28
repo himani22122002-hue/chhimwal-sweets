@@ -1,22 +1,49 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { galleryData } from "../data/gallery";
 import GalleryGrid from "../components/gallery/GalleryGrid";
 import Lightbox from "../components/gallery/Lightbox";
+import UploadModal from "../components/gallery/UploadModal";
 
 const Gallery = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedItem, setSelectedItem] = useState(null);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("chhimwal-uploaded-images");
+    if (saved) setUploadedImages(JSON.parse(saved));
+  }, []);
+
+  const allItems = useMemo(() => {
+    return [...galleryData, ...uploadedImages];
+  }, [uploadedImages]);
 
   const categories = useMemo(() => {
-    return ["All", ...new Set(galleryData.map((item) => item.category))];
-  }, []);
+    return ["All", ...new Set(allItems.map((item) => item.category))];
+  }, [allItems]);
 
   const filteredItems = useMemo(() => {
     return activeCategory === "All"
-      ? galleryData
-      : galleryData.filter((item) => item.category === activeCategory);
-  }, [activeCategory]);
+      ? allItems
+      : allItems.filter((item) => item.category === activeCategory);
+  }, [activeCategory, allItems]);
+
+  const handleUpload = (newImage) => {
+    const newEntry = { ...newImage, id: Date.now(), isUploaded: true };
+    const updated = [...uploadedImages, newEntry];
+    setUploadedImages(updated);
+    localStorage.setItem("chhimwal-uploaded-images", JSON.stringify(updated));
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this image?")) {
+      const updated = uploadedImages.filter((i) => i.id !== id);
+      setUploadedImages(updated);
+      localStorage.setItem("chhimwal-uploaded-images", JSON.stringify(updated));
+    }
+  };
 
   const handleNext = () => {
     const currentIndex = filteredItems.findIndex((i) => i.id === selectedItem.id);
@@ -32,8 +59,13 @@ const Gallery = () => {
 
   return (
     <div className="bg-[#FFF8E7] min-h-screen py-12 px-6">
-      {/* Hero */}
-      <div className="max-w-7xl mx-auto text-center mb-16">
+      <div className="max-w-7xl mx-auto text-center mb-16 relative">
+        <button
+          onClick={() => setIsUploadModalOpen(true)}
+          className="absolute top-0 right-0 bg-[#D4AF37] text-white px-6 py-2 rounded-full hover:bg-[#D4AF37]/90"
+        >
+          Upload Images
+        </button>
         <motion.p
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -58,7 +90,6 @@ const Gallery = () => {
         </motion.p>
       </div>
 
-      {/* Filters */}
       <div className="max-w-7xl mx-auto mb-12 flex flex-wrap justify-center gap-4">
         {categories.map((category) => (
           <button
@@ -75,12 +106,17 @@ const Gallery = () => {
         ))}
       </div>
 
-      {/* Grid */}
       <div className="max-w-7xl mx-auto">
-        <GalleryGrid items={filteredItems} onImageClick={setSelectedItem} />
+        <GalleryGrid
+          items={filteredItems}
+          onImageClick={setSelectedItem}
+          onDelete={(id) => {
+            const item = allItems.find(i => i.id === id);
+            if (item.isUploaded) handleDelete(id);
+          }}
+        />
       </div>
 
-      {/* CTA */}
       <div className="max-w-7xl mx-auto mt-20 py-16 text-center border-t border-[#7B1E2B]/20">
         <h2 className="text-3xl font-bold text-[#7B1E2B] mb-6">
           Craving Authentic Kumaoni Sweets?
@@ -95,12 +131,16 @@ const Gallery = () => {
         </div>
       </div>
 
-      {/* Lightbox */}
       <Lightbox
         selectedItem={selectedItem}
         onClose={() => setSelectedItem(null)}
         onNext={handleNext}
         onPrev={handlePrev}
+      />
+      <UploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUpload={handleUpload}
       />
     </div>
   );
