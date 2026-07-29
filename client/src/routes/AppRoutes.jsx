@@ -22,6 +22,7 @@ import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminProducts from '../pages/admin/Products';
 import ProductForm from '../pages/admin/ProductForm';
 import Orders from '../pages/admin/Orders';
+import AdminGallery from '../pages/admin/Gallery';
 
 export default function AppRoutes() {
   return (
@@ -48,6 +49,7 @@ export default function AppRoutes() {
         <Route path="products/add" element={<ProductForm />} />
         <Route path="products/edit/:id" element={<ProductForm />} />
         <Route path="orders" element={<Orders />} />
+        <Route path="gallery" element={<AdminGallery />} />
       </Route>
     </Routes>
   );
