@@ -20,6 +20,7 @@ import NotFound from '../pages/NotFound';
 // Admin
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminProducts from '../pages/admin/Products';
+import ProductForm from '../pages/admin/ProductForm';
 
 export default function AppRoutes() {
   return (
@@ -43,6 +44,8 @@ export default function AppRoutes() {
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminDashboard />} />
         <Route path="products" element={<AdminProducts />} />
+        <Route path="products/add" element={<ProductForm />} />
+        <Route path="products/edit/:id" element={<ProductForm />} />
       </Route>
     </Routes>
   );
