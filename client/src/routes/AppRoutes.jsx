@@ -24,6 +24,14 @@ import Reviews from '../pages/admin/Reviews';
 
 // ... (other imports)
 
+import ProductForm from '../pages/admin/ProductForm';
+import Orders from '../pages/admin/Orders';
+import AdminGallery from '../pages/admin/Gallery';
+import Reviews from '../pages/admin/Reviews';
+import Customers from '../pages/admin/Customers';
+
+// ... (other imports)
+
 // Admin
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminProducts from '../pages/admin/Products';
@@ -31,6 +39,7 @@ import ProductForm from '../pages/admin/ProductForm';
 import Orders from '../pages/admin/Orders';
 import AdminGallery from '../pages/admin/Gallery';
 import Reviews from '../pages/admin/Reviews';
+import Customers from '../pages/admin/Customers';
 
 export default function AppRoutes() {
   return (
@@ -59,6 +68,7 @@ export default function AppRoutes() {
         <Route path="orders" element={<Orders />} />
         <Route path="gallery" element={<AdminGallery />} />
         <Route path="reviews" element={<Reviews />} />
+        <Route path="customers" element={<Customers />} />
       </Route>
     </Routes>
   );
