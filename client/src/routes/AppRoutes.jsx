@@ -17,12 +17,20 @@ import Register from '../pages/Register';
 import ForgotPassword from '../pages/ForgotPassword';
 import NotFound from '../pages/NotFound';
 
+import ProductForm from '../pages/admin/ProductForm';
+import Orders from '../pages/admin/Orders';
+import AdminGallery from '../pages/admin/Gallery';
+import Reviews from '../pages/admin/Reviews';
+
+// ... (other imports)
+
 // Admin
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminProducts from '../pages/admin/Products';
 import ProductForm from '../pages/admin/ProductForm';
 import Orders from '../pages/admin/Orders';
 import AdminGallery from '../pages/admin/Gallery';
+import Reviews from '../pages/admin/Reviews';
 
 export default function AppRoutes() {
   return (
@@ -50,6 +58,7 @@ export default function AppRoutes() {
         <Route path="products/edit/:id" element={<ProductForm />} />
         <Route path="orders" element={<Orders />} />
         <Route path="gallery" element={<AdminGallery />} />
+        <Route path="reviews" element={<Reviews />} />
       </Route>
     </Routes>
   );
