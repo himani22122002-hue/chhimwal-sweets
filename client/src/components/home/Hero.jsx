@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from 'react-router-dom';
 import heroBanner from "../../assets/images/hero-banner.png";
 
 export const Hero = () => {
@@ -51,21 +52,25 @@ export const Hero = () => {
             </p>
 
             <div className="flex flex-wrap gap-5 mt-10">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-[#7B1E2B] text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:bg-[#5d1723]"
-              >
-                Shop Now →
-              </motion.button>
+              <Link to="/products">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-[#7B1E2B] text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:bg-[#5d1723]"
+                >
+                  Shop Now →
+                </motion.button>
+              </Link>
 
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="border-2 border-[#7B1E2B] text-[#7B1E2B] px-8 py-4 rounded-xl font-semibold hover:bg-[#7B1E2B] hover:text-white transition"
-              >
-                Explore Categories
-              </motion.button>
+              <Link to="/products">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="border-2 border-[#7B1E2B] text-[#7B1E2B] px-8 py-4 rounded-xl font-semibold hover:bg-[#7B1E2B] hover:text-white transition"
+                >
+                  Explore Categories
+                </motion.button>
+              </Link>
             </div>
           </motion.div>
 {/* Right Hero Background */}
