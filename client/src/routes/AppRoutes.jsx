@@ -16,6 +16,7 @@ import Gallery from '../pages/Gallery';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import ForgotPassword from '../pages/ForgotPassword';
+import Wishlist from '../pages/Wishlist';
 import NotFound from '../pages/NotFound';
 
 // Admin Pages
@@ -45,6 +46,7 @@ export default function AppRoutes() {
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
+        <Route path="wishlist" element={<Wishlist />} />
         <Route path="*" element={<NotFound />} />
       </Route>
 
