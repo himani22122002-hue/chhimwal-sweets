@@ -1,14 +1,25 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Placeholder for API integration
+    try {
+      await login({ email, password });
+      navigate("/");
+    } catch (error) {
+      console.error(error);
+      alert("Login failed");
+    }
   };
 
   return (
@@ -22,7 +33,13 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-[#7B1E2B] mb-2">Email or Mobile</label>
-            <input type="text" className="w-full p-3 rounded-xl border border-[#7B1E2B]/20" required />
+            <input 
+              type="text" 
+              className="w-full p-3 rounded-xl border border-[#7B1E2B]/20" 
+              required 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
           <div className="relative">
             <label className="block text-[#7B1E2B] mb-2">Password</label>
@@ -30,6 +47,8 @@ const Login = () => {
               type={showPassword ? "text" : "password"} 
               className="w-full p-3 rounded-xl border border-[#7B1E2B]/20" 
               required 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
             <button 
               type="button"

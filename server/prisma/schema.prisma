@@ -7,38 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Enums
-enum Role {
-  USER
-  ADMIN
-}
-
-enum PaymentMethod {
-  COD
-  ONLINE
-}
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-}
-
-enum OrderStatus {
-  PENDING
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
-}
-
-enum ReviewStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-// Models
 model User {
   id         String     @id @default(uuid())
   fullName   String
@@ -51,9 +19,9 @@ model User {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
   cart       Cart?
-  wishlist   Wishlist[]
   orders     Order[]
   reviews    Review[]
+  wishlist   Wishlist[]
 
   @@index([email])
   @@map("users")
@@ -85,8 +53,8 @@ model Product {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   categoryId    String
-  category      Category         @relation(fields: [categoryId], references: [id])
   variants      ProductVariant[]
+  category      Category         @relation(fields: [categoryId], references: [id])
   reviews       Review[]
   wishlists     Wishlist[]
 
@@ -103,11 +71,11 @@ model ProductVariant {
   discountedPrice Decimal?    @db.Decimal(10, 2)
   stock           Int         @default(0)
   productId       String
-  product         Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  cartItems       CartItem[]
-  orderItems      OrderItem[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  product         Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
   @@map("product_variants")
@@ -116,10 +84,10 @@ model ProductVariant {
 model Cart {
   id        String     @id @default(uuid())
   userId    String     @unique
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items     CartItem[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  items     CartItem[]
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("carts")
 }
@@ -127,12 +95,12 @@ model Cart {
 model CartItem {
   id               String         @id @default(uuid())
   cartId           String
-  cart             Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
   productVariantId String
-  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
   quantity         Int
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+  cart             Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
 
   @@index([cartId])
   @@index([productVariantId])
@@ -142,11 +110,11 @@ model CartItem {
 model Wishlist {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
   @@index([userId])
@@ -163,14 +131,14 @@ model Order {
   paymentMethod   PaymentMethod
   paymentStatus   PaymentStatus @default(PENDING)
   orderStatus     OrderStatus   @default(PENDING)
-  shippingAddress Json // Stores structured address
+  shippingAddress Json
   phone           String
   trackingNumber  String?
   userId          String
-  user            User          @relation(fields: [userId], references: [id])
-  orderItems      OrderItem[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+  orderItems      OrderItem[]
+  user            User          @relation(fields: [userId], references: [id])
 
   @@index([orderNumber])
   @@index([userId])
@@ -180,13 +148,13 @@ model Order {
 model OrderItem {
   id               String         @id @default(uuid())
   orderId          String
-  order            Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productVariantId String
-  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
   quantity         Int
-  price            Decimal        @db.Decimal(10, 2) // Captured price at time of order
+  price            Decimal        @db.Decimal(10, 2)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+  order            Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
 
   @@index([orderId])
   @@index([productVariantId])
@@ -196,15 +164,15 @@ model OrderItem {
 model Review {
   id        String       @id @default(uuid())
   userId    String
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   productId String
-  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
   rating    Int
   title     String
   comment   String
   status    ReviewStatus @default(PENDING)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([productId])
@@ -221,4 +189,34 @@ model Gallery {
   updatedAt DateTime @updatedAt
 
   @@map("gallery")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PaymentMethod {
+  COD
+  ONLINE
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
