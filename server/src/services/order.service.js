@@ -8,9 +8,8 @@ const generateOrderNumber = () => {
   return `CS${timestamp}${random}`;
 };
 
-// ==========================================
-// CREATE ORDER - CUSTOMER
-// ==========================================
+// ==================== CREATE ORDER ====================
+
 const createOrder = async ({
   userId,
   cartItems,
@@ -59,6 +58,7 @@ const createOrder = async ({
   }
 
   let totalAmount = 0;
+
   const orderItemsData = [];
 
   for (const cartItem of cartItems) {
@@ -111,10 +111,12 @@ const createOrder = async ({
         shippingAddress,
         phone,
         userId,
+
         orderItems: {
           create: orderItemsData,
         },
       },
+
       include: {
         orderItems: {
           include: {
@@ -147,14 +149,14 @@ const createOrder = async ({
   return order;
 };
 
-// ==========================================
-// GET MY ORDERS - CUSTOMER
-// ==========================================
+// ==================== MY ORDERS ====================
+
 const getMyOrders = async (userId) => {
   return prisma.order.findMany({
     where: {
       userId,
     },
+
     include: {
       orderItems: {
         include: {
@@ -166,21 +168,22 @@ const getMyOrders = async (userId) => {
         },
       },
     },
+
     orderBy: {
       createdAt: "desc",
     },
   });
 };
 
-// ==========================================
-// GET SINGLE ORDER - CUSTOMER
-// ==========================================
+// ==================== GET SINGLE ORDER ====================
+
 const getOrderById = async (orderId, userId) => {
   const order = await prisma.order.findFirst({
     where: {
       id: orderId,
       userId,
     },
+
     include: {
       orderItems: {
         include: {
@@ -201,9 +204,8 @@ const getOrderById = async (orderId, userId) => {
   return order;
 };
 
-// ==========================================
-// GET ALL ORDERS - ADMIN
-// ==========================================
+// ==================== ADMIN: GET ALL ORDERS ====================
+
 const getAllOrders = async () => {
   return prisma.order.findMany({
     include: {
@@ -215,6 +217,7 @@ const getAllOrders = async () => {
           phone: true,
         },
       },
+
       orderItems: {
         include: {
           productVariant: {
@@ -225,46 +228,37 @@ const getAllOrders = async () => {
         },
       },
     },
+
     orderBy: {
       createdAt: "desc",
     },
   });
 };
 
-// ==========================================
-// UPDATE ORDER STATUS - ADMIN
-// ==========================================
+// ==================== ADMIN: UPDATE ORDER STATUS ====================
+
 const updateOrderStatus = async (orderId, status) => {
-  const validStatuses = [
+  const allowedStatuses = [
     "PENDING",
-    "CONFIRMED",
-    "PREPARING",
-    "OUT_FOR_DELIVERY",
+    "PROCESSING",
+    "SHIPPED",
     "DELIVERED",
     "CANCELLED",
   ];
 
-  if (!validStatuses.includes(status)) {
+  if (!allowedStatuses.includes(status)) {
     throw new ApiError(400, "Invalid order status");
   }
 
-  const existingOrder = await prisma.order.findUnique({
+  const order = await prisma.order.update({
     where: {
       id: orderId,
     },
-  });
 
-  if (!existingOrder) {
-    throw new ApiError(404, "Order not found");
-  }
-
-  return prisma.order.update({
-    where: {
-      id: orderId,
-    },
     data: {
       orderStatus: status,
     },
+
     include: {
       user: {
         select: {
@@ -274,6 +268,7 @@ const updateOrderStatus = async (orderId, status) => {
           phone: true,
         },
       },
+
       orderItems: {
         include: {
           productVariant: {
@@ -285,6 +280,8 @@ const updateOrderStatus = async (orderId, status) => {
       },
     },
   });
+
+  return order;
 };
 
 export {
