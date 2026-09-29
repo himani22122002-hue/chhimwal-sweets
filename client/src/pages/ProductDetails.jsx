@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Star,
@@ -21,6 +21,7 @@ import ReviewForm from "../components/reviews/ReviewForm";
 
 const ProductDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -63,7 +64,7 @@ const ProductDetails = () => {
           );
         }
 
-        // Existing local reviews
+        // Load existing local reviews
         const saved = localStorage.getItem(`reviews-${id}`);
 
         if (saved) {
@@ -101,6 +102,7 @@ const ProductDetails = () => {
     loadProduct();
   }, [id]);
 
+  // Save reviews
   useEffect(() => {
     if (id && reviews.length > 0) {
       localStorage.setItem(
@@ -151,10 +153,19 @@ const ProductDetails = () => {
 
   const rating = Number(product.averageRating || 0);
 
+  // Add to Cart
   const handleAddToCart = () => {
     if (!selectedVariant) return;
 
     addToCart(product, selectedVariant, quantity);
+  };
+
+  // Buy Now
+  const handleBuyNow = () => {
+    if (!selectedVariant) return;
+
+    addToCart(product, selectedVariant, quantity);
+    navigate("/checkout");
   };
 
   return (
@@ -163,20 +174,21 @@ const ProductDetails = () => {
 
         {/* Breadcrumb */}
         <nav className="text-xs font-semibold text-[#7B1E2B]/60 mb-8 uppercase tracking-widest">
-          <Link to="/" className="hover:text-[#7B1E2B]">
+          <Link
+            to="/"
+            className="hover:text-[#7B1E2B]"
+          >
             Home
           </Link>{" "}
-          /
+          /{" "}
           <Link
             to="/products"
             className="hover:text-[#7B1E2B]"
           >
-            {" "}
             Shop
           </Link>{" "}
-          /
+          /{" "}
           <span className="text-[#7B1E2B]">
-            {" "}
             {product.name}
           </span>
         </nav>
@@ -235,6 +247,7 @@ const ProductDetails = () => {
               </p>
             )}
 
+            {/* Description */}
             <p className="text-gray-600 leading-relaxed">
               {product.description}
             </p>
@@ -249,9 +262,10 @@ const ProductDetails = () => {
                 {product.variants?.map((variant) => (
                   <button
                     key={variant.id}
-                    onClick={() =>
-                      setSelectedVariant(variant)
-                    }
+                    onClick={() => {
+                      setSelectedVariant(variant);
+                      setQuantity(1);
+                    }}
                     className={`px-6 py-2 rounded-lg border text-sm font-semibold ${
                       selectedVariant?.id === variant.id
                         ? "border-[#7B1E2B] bg-[#7B1E2B] text-white"
@@ -267,6 +281,7 @@ const ProductDetails = () => {
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
 
+              {/* Quantity */}
               <div className="flex items-center border border-[#7B1E2B] rounded-lg">
                 <button
                   onClick={() =>
@@ -291,6 +306,7 @@ const ProductDetails = () => {
                 </button>
               </div>
 
+              {/* Add to Cart */}
               <button
                 onClick={handleAddToCart}
                 className="flex-1 flex items-center justify-center gap-2 bg-[#7B1E2B] text-white py-3 rounded-lg font-bold hover:bg-[#5a1620] transition-colors"
@@ -299,8 +315,9 @@ const ProductDetails = () => {
                 Add to Cart
               </button>
 
+              {/* Buy Now */}
               <button
-                onClick={handleAddToCart}
+                onClick={handleBuyNow}
                 className="flex-1 flex items-center justify-center gap-2 bg-[#D4AF37] text-white py-3 rounded-lg font-bold hover:bg-[#b8952b] transition-colors"
               >
                 <Zap size={20} />
@@ -310,6 +327,7 @@ const ProductDetails = () => {
 
             {/* Highlights */}
             <div className="grid grid-cols-3 gap-4 border-t border-[#7B1E2B]/10 pt-6 mt-6">
+
               <div className="flex flex-col items-center gap-2 text-[#7B1E2B]">
                 <Award size={24} />
                 <span className="text-xs font-bold uppercase">
@@ -330,12 +348,14 @@ const ProductDetails = () => {
                   Safe Pack
                 </span>
               </div>
+
             </div>
           </motion.div>
         </div>
 
         {/* Reviews */}
         <div className="border-t border-[#7B1E2B]/10 pt-16 grid grid-cols-1 lg:grid-cols-2 gap-12">
+
           <div>
             <RatingSummary reviews={reviews} />
 
@@ -352,11 +372,13 @@ const ProductDetails = () => {
           <div>
             <ReviewForm onAddReview={handleAddReview} />
           </div>
+
         </div>
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="border-t border-[#7B1E2B]/10 pt-16 mt-16">
+
             <h2 className="text-3xl font-extrabold text-[#7B1E2B] mb-10 text-center">
               You May Also Like
             </h2>
@@ -374,8 +396,10 @@ const ProductDetails = () => {
                 </div>
               ))}
             </motion.div>
+
           </div>
         )}
+
       </div>
     </div>
   );

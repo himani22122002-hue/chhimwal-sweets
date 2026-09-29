@@ -1,45 +1,70 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(() => {
-    const savedCart = localStorage.getItem('chhimwal-cart');
+    const savedCart = localStorage.getItem("chhimwal-cart");
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
   useEffect(() => {
-    localStorage.setItem('chhimwal-cart', JSON.stringify(cartItems));
+    localStorage.setItem("chhimwal-cart", JSON.stringify(cartItems));
   }, [cartItems]);
 
   const addToCart = (product, variant, quantity = 1) => {
     setCartItems((prevItems) => {
       const existingItemIndex = prevItems.findIndex(
-        (item) => item.id === product.id && item.variant.weight === variant.weight
+        (item) =>
+          item.id === product.id &&
+          item.variant?.weight === variant?.weight
       );
 
-      if (existingItemIndex > -1) {
-        const newItems = [...prevItems];
-        newItems[existingItemIndex].quantity += quantity;
-        return newItems;
+      // If product + variant already exists,
+      // SET the selected quantity instead of adding again.
+      if (existingItemIndex !== -1) {
+        return prevItems.map((item, index) =>
+          index === existingItemIndex
+            ? {
+                ...item,
+                quantity: Number(quantity),
+                variant: variant,
+              }
+            : item
+        );
       }
 
-      return [...prevItems, { ...product, variant, quantity }];
+      // New product
+      return [
+        ...prevItems,
+        {
+          ...product,
+          variant,
+          quantity: Number(quantity),
+        },
+      ];
     });
   };
 
   const removeFromCart = (id, weight) => {
     setCartItems((prevItems) =>
-      prevItems.filter((item) => !(item.id === id && item.variant.weight === weight))
+      prevItems.filter(
+        (item) =>
+          !(item.id === id && item.variant?.weight === weight)
+      )
     );
   };
 
   const updateQuantity = (id, weight, newQuantity) => {
     if (newQuantity < 1) return;
+
     setCartItems((prevItems) =>
       prevItems.map((item) =>
-        item.id === id && item.variant.weight === weight
-          ? { ...item, quantity: newQuantity }
+        item.id === id && item.variant?.weight === weight
+          ? {
+              ...item,
+              quantity: Number(newQuantity),
+            }
           : item
       )
     );
@@ -49,9 +74,15 @@ export const CartProvider = ({ children }) => {
     setCartItems([]);
   };
 
-  const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const totalItems = cartItems.reduce(
+    (total, item) => total + Number(item.quantity || 0),
+    0
+  );
+
   const subtotal = cartItems.reduce(
-    (acc, item) => acc + item.variant.price * item.quantity,
+    (total, item) =>
+      total +
+      Number(item.variant?.price || 0) * Number(item.quantity || 0),
     0
   );
 
