@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 
 import ProfileSidebar from "../components/profile/ProfileSidebar";
@@ -8,7 +9,41 @@ import AddressBook from "../components/profile/AddressBook";
 import Wishlist from "./Wishlist";
 
 const Profile = () => {
-  const [activeTab, setActiveTab] = useState("My Profile");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const tabFromUrl = searchParams.get("tab");
+
+  const getInitialTab = () => {
+    switch (tabFromUrl) {
+      case "orders":
+        return "My Orders";
+
+      case "addresses":
+        return "Saved Addresses";
+
+      case "wishlist":
+        return "Wishlist";
+
+      default:
+        return "My Profile";
+    }
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+
+    if (tab === "My Orders") {
+      setSearchParams({ tab: "orders" });
+    } else if (tab === "Saved Addresses") {
+      setSearchParams({ tab: "addresses" });
+    } else if (tab === "Wishlist") {
+      setSearchParams({ tab: "wishlist" });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -40,7 +75,7 @@ const Profile = () => {
         <div className="md:w-1/4">
           <ProfileSidebar
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
+            setActiveTab={handleTabChange}
           />
         </div>
 

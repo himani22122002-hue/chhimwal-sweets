@@ -1,6 +1,7 @@
 import logo from "../../assets/images/logo.png";
 import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+
 import {
   Menu,
   X,
@@ -47,8 +48,6 @@ export default function Navbar() {
 
   const { totalItems } = useCart();
   const { wishlist } = useWishlist();
-
-  // Real authentication state
   const { user, logout } = useAuth();
 
   const navigate = useNavigate();
@@ -88,12 +87,26 @@ export default function Navbar() {
   const handleLogout = async () => {
     try {
       await logout();
+
       setIsProfileOpen(false);
       setIsMenuOpen(false);
+
       navigate("/");
     } catch (error) {
       console.error("Logout failed:", error);
     }
+  };
+
+  const handleProfile = () => {
+    setIsProfileOpen(false);
+    setIsMenuOpen(false);
+    navigate("/profile");
+  };
+
+  const handleOrders = () => {
+    setIsProfileOpen(false);
+    setIsMenuOpen(false);
+    navigate("/profile?tab=orders");
   };
 
   const renderUserMenu = () => {
@@ -134,7 +147,6 @@ export default function Navbar() {
 
         {isProfileOpen && (
           <div className="absolute right-0 top-12 w-56 bg-[#FFF8E7] rounded-xl shadow-2xl border border-[#D4AF37]/20 py-2 z-[100]">
-
             {/* User info */}
             <div className="px-4 py-3 border-b border-[#7B1E2B]/10">
               <p className="font-bold text-[#7B1E2B] truncate">
@@ -168,10 +180,7 @@ export default function Navbar() {
 
             {/* Profile */}
             <button
-              onClick={() => {
-                setIsProfileOpen(false);
-                navigate("/profile");
-              }}
+              onClick={handleProfile}
               className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 hover:bg-[#FDF3D5] hover:text-[#7B1E2B]"
             >
               <User size={18} />
@@ -180,10 +189,7 @@ export default function Navbar() {
 
             {/* Orders */}
             <button
-              onClick={() => {
-                setIsProfileOpen(false);
-                navigate("/profile");
-              }}
+              onClick={handleOrders}
               className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 hover:bg-[#FDF3D5] hover:text-[#7B1E2B]"
             >
               <Package size={18} />
@@ -255,7 +261,6 @@ export default function Navbar() {
       }`}
     >
       <nav className="container mx-auto px-4 flex items-center justify-between">
-
         {/* Logo */}
         <NavLink to="/" className="flex items-center">
           <img
@@ -340,7 +345,6 @@ export default function Navbar() {
 
         {/* Mobile Actions */}
         <div className="flex flex-col gap-4 mb-8">
-
           <button
             className="flex items-center gap-3 text-lg font-medium text-gray-700"
             onClick={() => {
@@ -372,23 +376,21 @@ export default function Navbar() {
 
           {user && (
             <>
-              <NavLink
-                to="/profile"
+              <button
+                onClick={handleProfile}
                 className="flex items-center gap-3 text-lg font-medium text-gray-700"
-                onClick={() => setIsMenuOpen(false)}
               >
                 <User size={20} />
                 My Profile
-              </NavLink>
+              </button>
 
-              <NavLink
-                to="/profile"
+              <button
+                onClick={handleOrders}
                 className="flex items-center gap-3 text-lg font-medium text-gray-700"
-                onClick={() => setIsMenuOpen(false)}
               >
                 <Package size={20} />
                 My Orders
-              </NavLink>
+              </button>
 
               {user.role === "ADMIN" && (
                 <NavLink
@@ -414,7 +416,6 @@ export default function Navbar() {
 
         {/* Navigation */}
         <div className="flex flex-col gap-6 border-t pt-6">
-
           {NAV_LINKS.map((link) =>
             link.isDropdown ? (
               <div key={link.name} className="flex flex-col gap-2">
