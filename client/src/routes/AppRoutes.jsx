@@ -17,6 +17,7 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import ForgotPassword from '../pages/ForgotPassword';
 import Wishlist from '../pages/Wishlist';
+import Profile from '../pages/Profile';
 import NotFound from '../pages/NotFound';
 
 // Admin Pages
@@ -32,36 +33,59 @@ import Settings from '../pages/admin/Settings';
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Customer Routes */}
+
+      {/* ================= CUSTOMER ROUTES ================= */}
       <Route path="/" element={<MainLayout />}>
+        
         <Route index element={<Home />} />
+
         <Route path="products" element={<Products />} />
         <Route path="products/:id" element={<ProductDetails />} />
+
         <Route path="cart" element={<Cart />} />
         <Route path="checkout" element={<Checkout />} />
         <Route path="order-success" element={<OrderSuccess />} />
+
         <Route path="about" element={<About />} />
         <Route path="gallery" element={<Gallery />} />
         <Route path="contact" element={<Contact />} />
+
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
+
         <Route path="wishlist" element={<Wishlist />} />
+
+        {/* User Profile */}
+        <Route path="profile" element={<Profile />} />
+
+        {/* Customer 404 */}
         <Route path="*" element={<NotFound />} />
+
       </Route>
 
-      {/* Admin Routes */}
+
+      {/* ================= ADMIN ROUTES ================= */}
       <Route path="/admin" element={<AdminLayout />}>
+
         <Route index element={<AdminDashboard />} />
+
         <Route path="products" element={<AdminProducts />} />
         <Route path="products/add" element={<ProductForm />} />
         <Route path="products/edit/:id" element={<ProductForm />} />
+
         <Route path="orders" element={<Orders />} />
+
         <Route path="gallery" element={<AdminGallery />} />
+
         <Route path="reviews" element={<Reviews />} />
+
         <Route path="customers" element={<Customers />} />
+
         <Route path="settings" element={<Settings />} />
+
       </Route>
+
     </Routes>
   );
 }
