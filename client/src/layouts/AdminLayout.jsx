@@ -128,12 +128,12 @@ export default function AdminLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  // Logged-in customer trying to access admin
-  if (user.role !== "ADMIN") {
+  // Only ADMIN and SUPER_ADMIN can access admin dashboard
+  if (!["ADMIN", "SUPER_ADMIN"].includes(user.role)) {
     return <Navigate to="/" replace />;
   }
 
-  // Admin
+  // Admin / Super Admin
   return (
     <div className="flex bg-[#FFF8E7] min-h-screen">
       <AdminSidebar />
