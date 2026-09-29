@@ -9,44 +9,38 @@ const MyOrders = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        setLoading(true);
-        setError("");
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-        const response = await fetch("/api/v1/orders", {
-          method: "GET",
-          credentials: "include",
-        });
+      const response = await fetch("/api/v1/orders", {
+        credentials: "include",
+      });
 
-        const result = await response.json();
+      const result = await response.json();
 
-        if (!response.ok) {
-          throw new Error(result?.message || "Failed to fetch orders");
-        }
-
-        setOrders(result?.data || []);
-      } catch (error) {
-        console.error("Failed to fetch orders:", error);
-        setError(error.message || "Unable to load orders");
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error(
+          result?.message || "Failed to fetch orders"
+        );
       }
-    };
 
+      setOrders(result?.data || []);
+    } catch (error) {
+      console.error("Failed to fetch orders:", error);
+
+      setError(
+        error?.message || "Unable to load your orders."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchOrders();
   }, []);
-
-  const formatDate = (date) => {
-    if (!date) return "";
-
-    return new Date(date).toLocaleDateString("en-IN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  };
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -70,25 +64,52 @@ const MyOrders = () => {
   const formatStatus = (status) => {
     if (!status) return "Pending";
 
-    return status.charAt(0) + status.slice(1).toLowerCase();
+    return status
+      .toLowerCase()
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
+  const formatDate = (date) => {
+    if (!date) return "";
+
+    return new Date(date).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const getOrderProductName = (order) => {
+    const firstItem = order.orderItems?.[0];
+
+    return (
+      firstItem?.productVariant?.product?.name ||
+      "Order"
+    );
   };
 
   if (loading) {
     return (
-      <div className="bg-white rounded-3xl shadow-lg p-8 text-center">
-        <p className="text-gray-500">Loading your orders...</p>
+      <div className="bg-white p-8 rounded-3xl shadow-lg text-center">
+        <p className="text-gray-500">
+          Loading your orders...
+        </p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white rounded-3xl shadow-lg p-8 text-center">
-        <p className="text-red-600 mb-4">{error}</p>
+      <div className="bg-white p-8 rounded-3xl shadow-lg text-center">
+        <p className="text-red-600 mb-4">
+          {error}
+        </p>
 
         <button
-          onClick={() => window.location.reload()}
-          className="bg-[#7B1E2B] text-white px-5 py-2 rounded-lg"
+          type="button"
+          onClick={fetchOrders}
+          className="px-5 py-2 bg-[#7B1E2B] text-white rounded-xl"
         >
           Try Again
         </button>
@@ -98,8 +119,8 @@ const MyOrders = () => {
 
   if (orders.length === 0) {
     return (
-      <div className="bg-white rounded-3xl shadow-lg p-8 text-center">
-        <h3 className="text-xl font-semibold text-[#7B1E2B] mb-2">
+      <div className="bg-white p-8 rounded-3xl shadow-lg text-center">
+        <h3 className="text-xl font-bold text-[#7B1E2B] mb-2">
           No Orders Yet
         </h3>
 
@@ -108,8 +129,9 @@ const MyOrders = () => {
         </p>
 
         <button
+          type="button"
           onClick={() => navigate("/products")}
-          className="bg-[#7B1E2B] text-white px-6 py-2 rounded-lg hover:opacity-90"
+          className="px-6 py-3 bg-[#7B1E2B] text-white rounded-xl hover:bg-[#7B1E2B]/90"
         >
           Start Shopping
         </button>
@@ -119,62 +141,54 @@ const MyOrders = () => {
 
   return (
     <div className="space-y-4">
-      {orders.map((order, index) => {
-        const firstItem = order.orderItems?.[0];
+      {orders.map((order) => (
+        <motion.div
+          key={order.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white p-6 rounded-3xl shadow-lg flex flex-col md:flex-row md:justify-between md:items-center gap-5"
+        >
+          <div>
+            <h3 className="font-bold text-[#7B1E2B] text-lg">
+              {getOrderProductName(order)}
+              {order.orderItems?.length > 1 && (
+                <span className="text-sm text-gray-500 ml-2">
+                  +{order.orderItems.length - 1} more
+                </span>
+              )}
+            </h3>
 
-        const productName =
-          firstItem?.productVariant?.product?.name ||
-          "Product";
+            <p className="text-sm text-gray-500 mt-1">
+              #{order.orderNumber} •{" "}
+              {formatDate(order.createdAt)}
+            </p>
 
-        const itemCount = order.orderItems?.length || 0;
+            <p className="font-bold text-[#D4AF37] mt-1">
+              ₹{Number(order.totalAmount).toFixed(0)}
+            </p>
+          </div>
 
-        return (
-          <motion.div
-            key={order.id}
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: index * 0.05 }}
-            className="bg-white p-6 rounded-3xl shadow-lg flex justify-between items-center"
-          >
-            <div>
-              <h3 className="font-bold text-[#7B1E2B]">
-                {productName}
-                {itemCount > 1 && (
-                  <span className="text-sm text-gray-500 font-normal ml-2">
-                    + {itemCount - 1} more item
-                    {itemCount - 1 > 1 ? "s" : ""}
-                  </span>
-                )}
-              </h3>
+          <div className="flex items-center gap-4">
+            <span
+              className={`px-3 py-1 rounded-full text-sm ${getStatusClass(
+                order.orderStatus
+              )}`}
+            >
+              {formatStatus(order.orderStatus)}
+            </span>
 
-              <p className="text-sm text-gray-500">
-                #{order.orderNumber} • {formatDate(order.createdAt)}
-              </p>
-
-              <p className="font-bold text-[#D4AF37]">
-                ₹{Number(order.totalAmount || 0).toLocaleString("en-IN")}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <span
-                className={`px-3 py-1 rounded-full text-sm ${getStatusClass(
-                  order.orderStatus
-                )}`}
-              >
-                {formatStatus(order.orderStatus)}
-              </span>
-
-              <button
-                onClick={() => navigate(`/orders/${order.id}`)}
-                className="text-[#7B1E2B] hover:underline"
-              >
-                View Details
-              </button>
-            </div>
-          </motion.div>
-        );
-      })}
+            <button
+              type="button"
+              onClick={() =>
+                navigate(`/orders/${order.id}`)
+              }
+              className="text-[#7B1E2B] hover:underline"
+            >
+              View Details
+            </button>
+          </div>
+        </motion.div>
+      ))}
     </div>
   );
 };
