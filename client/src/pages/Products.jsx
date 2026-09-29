@@ -1,41 +1,88 @@
-import React from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { products } from '../data/products';
-import ProductCard from '../components/products/ProductCard';
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import ProductCard from "../components/products/ProductCard";
+import { ProductService } from "../services/ProductService";
 
 const Products = () => {
   const [searchParams] = useSearchParams();
-  const category = searchParams.get("category");
+  const categoryId = searchParams.get("category");
 
-  const filteredProducts = category
-    ? products.filter((p) => p.category === category)
-    : products;
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await ProductService.getProducts({
+          categoryId: categoryId || undefined,
+          active: true,
+          limit: 50,
+        });
+
+        setProducts(data?.products || []);
+      } catch (err) {
+        console.error("Failed to load products:", err);
+        setError("Unable to load products. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, [categoryId]);
 
   return (
     <div className="min-h-screen bg-[#FFF8E7] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Breadcrumb / Title */}
+
         <div className="mb-10">
-          <p className="text-[#7B1E2B]/70 mb-2">Home / Products</p>
+          <p className="text-[#7B1E2B]/70 mb-2">
+            Home / Products
+          </p>
+
           <h1 className="text-4xl font-bold text-[#7B1E2B]">
-            {category || "All Products"}
+            {categoryId ? "Category Products" : "All Products"}
           </h1>
         </div>
 
-        {/* Product Grid */}
-        {filteredProducts.length > 0 ? (
+        {loading && (
+          <div className="text-center py-20">
+            <p className="text-[#7B1E2B] text-lg">
+              Loading products...
+            </p>
+          </div>
+        )}
+
+        {!loading && error && (
+          <div className="text-center py-20">
+            <p className="text-red-600">{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && products.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+              />
             ))}
           </div>
-        ) : (
-          /* Empty State */
+        )}
+
+        {!loading && !error && products.length === 0 && (
           <div className="text-center py-20">
             <h2 className="text-2xl font-semibold text-[#7B1E2B] mb-2">
-              No products available in this category.
+              No products available.
             </h2>
-            <p className="text-gray-600">Please check back later or explore other categories.</p>
+
+            <p className="text-gray-600">
+              Please check back later or explore other categories.
+            </p>
           </div>
         )}
       </div>
