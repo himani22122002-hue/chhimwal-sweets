@@ -8,6 +8,9 @@ const generateOrderNumber = () => {
   return `CS${timestamp}${random}`;
 };
 
+// ==========================================
+// CREATE ORDER - CUSTOMER
+// ==========================================
 const createOrder = async ({
   userId,
   cartItems,
@@ -35,7 +38,6 @@ const createOrder = async ({
     throw new ApiError(400, "Only Cash on Delivery is available");
   }
 
-  // Get actual variants from database
   const variantIds = cartItems.map((item) => item.variantId);
 
   const variants = await prisma.productVariant.findMany({
@@ -50,7 +52,10 @@ const createOrder = async ({
   });
 
   if (variants.length !== variantIds.length) {
-    throw new ApiError(400, "One or more products are no longer available");
+    throw new ApiError(
+      400,
+      "One or more products are no longer available"
+    );
   }
 
   let totalAmount = 0;
@@ -78,7 +83,9 @@ const createOrder = async ({
       );
     }
 
-    const price = Number(variant.discountedPrice ?? variant.price);
+    const price = Number(
+      variant.discountedPrice ?? variant.price
+    );
 
     totalAmount += price * quantity;
 
@@ -121,7 +128,6 @@ const createOrder = async ({
       },
     });
 
-    // Reduce stock
     for (const cartItem of cartItems) {
       await tx.productVariant.update({
         where: {
@@ -141,6 +147,9 @@ const createOrder = async ({
   return order;
 };
 
+// ==========================================
+// GET MY ORDERS - CUSTOMER
+// ==========================================
 const getMyOrders = async (userId) => {
   return prisma.order.findMany({
     where: {
@@ -163,6 +172,9 @@ const getMyOrders = async (userId) => {
   });
 };
 
+// ==========================================
+// GET SINGLE ORDER - CUSTOMER
+// ==========================================
 const getOrderById = async (orderId, userId) => {
   const order = await prisma.order.findFirst({
     where: {
@@ -189,8 +201,96 @@ const getOrderById = async (orderId, userId) => {
   return order;
 };
 
+// ==========================================
+// GET ALL ORDERS - ADMIN
+// ==========================================
+const getAllOrders = async () => {
+  return prisma.order.findMany({
+    include: {
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+        },
+      },
+      orderItems: {
+        include: {
+          productVariant: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
+// ==========================================
+// UPDATE ORDER STATUS - ADMIN
+// ==========================================
+const updateOrderStatus = async (orderId, status) => {
+  const validStatuses = [
+    "PENDING",
+    "CONFIRMED",
+    "PREPARING",
+    "OUT_FOR_DELIVERY",
+    "DELIVERED",
+    "CANCELLED",
+  ];
+
+  if (!validStatuses.includes(status)) {
+    throw new ApiError(400, "Invalid order status");
+  }
+
+  const existingOrder = await prisma.order.findUnique({
+    where: {
+      id: orderId,
+    },
+  });
+
+  if (!existingOrder) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  return prisma.order.update({
+    where: {
+      id: orderId,
+    },
+    data: {
+      orderStatus: status,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+        },
+      },
+      orderItems: {
+        include: {
+          productVariant: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      },
+    },
+  });
+};
+
 export {
   createOrder,
   getMyOrders,
   getOrderById,
+  getAllOrders,
+  updateOrderStatus,
 };

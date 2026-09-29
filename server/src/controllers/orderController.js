@@ -2,8 +2,13 @@ import {
   createOrder,
   getMyOrders,
   getOrderById,
+  getAllOrders,
+  updateOrderStatus,
 } from "../services/order.service.js";
 
+// ==========================================
+// CUSTOMER - PLACE ORDER
+// ==========================================
 const placeOrder = async (req, res) => {
   const {
     cartItems,
@@ -27,6 +32,9 @@ const placeOrder = async (req, res) => {
   });
 };
 
+// ==========================================
+// CUSTOMER - GET MY ORDERS
+// ==========================================
 const getOrders = async (req, res) => {
   const orders = await getMyOrders(req.user.id);
 
@@ -37,6 +45,9 @@ const getOrders = async (req, res) => {
   });
 };
 
+// ==========================================
+// CUSTOMER - GET SINGLE ORDER
+// ==========================================
 const getOrder = async (req, res) => {
   const order = await getOrderById(
     req.params.id,
@@ -50,8 +61,41 @@ const getOrder = async (req, res) => {
   });
 };
 
+// ==========================================
+// ADMIN - GET ALL ORDERS
+// ==========================================
+const getAllAdminOrders = async (req, res) => {
+  const orders = await getAllOrders();
+
+  res.status(200).json({
+    success: true,
+    message: "All orders fetched successfully",
+    data: orders,
+  });
+};
+
+// ==========================================
+// ADMIN - UPDATE ORDER STATUS
+// ==========================================
+const changeOrderStatus = async (req, res) => {
+  const { status } = req.body;
+
+  const order = await updateOrderStatus(
+    req.params.id,
+    status
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Order status updated successfully",
+    data: order,
+  });
+};
+
 export {
   placeOrder,
   getOrders,
   getOrder,
+  getAllAdminOrders,
+  changeOrderStatus,
 };
