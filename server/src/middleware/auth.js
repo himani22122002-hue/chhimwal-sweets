@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import prisma from "../config/db.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-
 const protect = asyncHandler(async (req, res, next) => {
   const token = req.cookies.jwt;
 

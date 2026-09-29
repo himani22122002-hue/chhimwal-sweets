@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
+import orderRoutes from "./routes/orderRoutes.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/product.routes.js";
@@ -26,7 +27,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan("dev"));
-
 // Health Check
 app.get("/api/v1/health", (req, res) => {
   res.status(200).json({
@@ -39,6 +39,7 @@ app.get("/api/v1/health", (req, res) => {
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/categories", categoryRoutes);
+app.use("/api/v1/orders", orderRoutes);
 
 // Error Handler
 app.use(errorHandler);
