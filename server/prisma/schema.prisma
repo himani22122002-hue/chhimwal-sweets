@@ -217,6 +217,7 @@ model Address {
 enum Role {
   USER
   ADMIN
+  SUPER_ADMIN
 }
 
 enum PaymentMethod {

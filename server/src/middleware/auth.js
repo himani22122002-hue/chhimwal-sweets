@@ -37,11 +37,13 @@ const protect = asyncHandler(async (req, res, next) => {
 });
 
 const adminOnly = (req, res, next) => {
-  if (req.user && req.user.role === "ADMIN") {
+  if (
+    req.user &&
+    (req.user.role === "ADMIN" || req.user.role === "SUPER_ADMIN")
+  ) {
     next();
   } else {
     throw new ApiError(403, "Not authorized as an admin");
   }
 };
-
 export { protect, adminOnly };
