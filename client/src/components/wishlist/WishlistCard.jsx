@@ -37,7 +37,11 @@ const WishlistCard = ({ item }) => {
         <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
       </div>
       <h3 className="text-xl font-bold text-[#7B1E2B] mb-1">{item.name}</h3>
-      <p className="text-gray-600 mb-2">{item.category}</p>
+      <p className="text-gray-600 mb-2">
+  {typeof item.category === "object"
+    ? item.category?.name
+    : item.category}
+</p>
       <div className="flex justify-between items-center mb-4">
         <span className="font-bold text-lg text-[#D4AF37]">₹{item.variants[0].price}</span>
       </div>
