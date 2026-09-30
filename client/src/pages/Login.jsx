@@ -29,12 +29,14 @@ const Login = () => {
       const loggedInUser = result?.data;
 
       // Admin → Admin Dashboard
-      if (loggedInUser?.role === "ADMIN") {
-        navigate("/admin");
-      } else {
-        // Normal User → Home
-        navigate("/");
-      }
+      if (
+  loggedInUser?.role === "ADMIN" ||
+  loggedInUser?.role === "SUPER_ADMIN"
+) {
+  navigate("/admin");
+} else {
+  navigate("/");
+}
     } catch (error) {
       console.error("Login failed:", error);
 
