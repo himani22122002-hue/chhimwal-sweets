@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   createReview,
+  getProductReviews,
   getAllReviews,
   updateReviewStatus,
 } from "../controllers/reviewController.js";
@@ -13,14 +14,27 @@ import {
 
 const router = express.Router();
 
-// Customer - submit review
+// ==========================================
+// CUSTOMER - SUBMIT REVIEW
+// ==========================================
 router.post(
   "/",
   protect,
   createReview
 );
 
-// Admin - get all reviews
+// ==========================================
+// CUSTOMER/PUBLIC - GET APPROVED
+// REVIEWS FOR A PRODUCT
+// ==========================================
+router.get(
+  "/product/:productId",
+  getProductReviews
+);
+
+// ==========================================
+// ADMIN - GET ALL REVIEWS
+// ==========================================
 router.get(
   "/",
   protect,
@@ -28,7 +42,9 @@ router.get(
   getAllReviews
 );
 
-// Admin - update review status
+// ==========================================
+// ADMIN - UPDATE REVIEW STATUS
+// ==========================================
 router.patch(
   "/:id/status",
   protect,

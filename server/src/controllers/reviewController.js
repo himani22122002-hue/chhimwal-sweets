@@ -37,7 +37,9 @@ const createReview = asyncHandler(async (req, res) => {
     );
   }
 
+  // ------------------------------------------
   // Check product
+  // ------------------------------------------
   const product = await prisma.product.findUnique({
     where: {
       id: productId,
@@ -51,7 +53,9 @@ const createReview = asyncHandler(async (req, res) => {
     );
   }
 
+  // ------------------------------------------
   // Check duplicate review
+  // ------------------------------------------
   const existingReview =
     await prisma.review.findFirst({
       where: {
@@ -67,6 +71,9 @@ const createReview = asyncHandler(async (req, res) => {
     );
   }
 
+  // ------------------------------------------
+  // Create review
+  // ------------------------------------------
   const review = await prisma.review.create({
     data: {
       userId: req.user.id,
@@ -75,7 +82,7 @@ const createReview = asyncHandler(async (req, res) => {
       title: title.trim(),
       comment: comment.trim(),
 
-      // New reviews are pending
+      // New reviews always start as pending
       status: "PENDING",
     },
 
@@ -85,6 +92,7 @@ const createReview = asyncHandler(async (req, res) => {
           id: true,
           fullName: true,
           email: true,
+          avatar: true,
         },
       },
 
@@ -105,6 +113,92 @@ const createReview = asyncHandler(async (req, res) => {
 });
 
 // ==========================================
+// GET APPROVED REVIEWS FOR A PRODUCT
+// CUSTOMER / PUBLIC
+// ==========================================
+const getProductReviews = asyncHandler(
+  async (req, res) => {
+    const { productId } = req.params;
+
+    if (!productId) {
+      throw new ApiError(
+        400,
+        "Product is required"
+      );
+    }
+
+    // Check product exists
+    const product = await prisma.product.findUnique({
+      where: {
+        id: productId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!product) {
+      throw new ApiError(
+        404,
+        "Product not found"
+      );
+    }
+
+    // Only APPROVED reviews are public
+    const reviews =
+      await prisma.review.findMany({
+        where: {
+          productId,
+          status: "APPROVED",
+        },
+
+        include: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              avatar: true,
+            },
+          },
+        },
+
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+    const formattedReviews =
+      reviews.map((review) => ({
+        id: review.id,
+
+        name:
+          review.user?.fullName ||
+          "Customer",
+
+        avatar:
+          review.user?.avatar || null,
+
+        rating: review.rating,
+
+        title: review.title,
+
+        message: review.comment,
+
+        date: review.createdAt,
+
+        status: "APPROVED",
+      }));
+
+    res.status(200).json({
+      success: true,
+      data: formattedReviews,
+      message:
+        "Product reviews fetched successfully",
+    });
+  }
+);
+
+// ==========================================
 // GET ALL REVIEWS - ADMIN
 // ==========================================
 const getAllReviews = asyncHandler(
@@ -117,6 +211,7 @@ const getAllReviews = asyncHandler(
               id: true,
               fullName: true,
               email: true,
+              avatar: true,
             },
           },
 
@@ -156,11 +251,17 @@ const getAllReviews = asyncHandler(
         message: review.comment,
 
         /*
-         * IMPORTANT:
-         * Database uses REJECTED because
-         * Prisma enum does not contain HIDDEN.
+         * Prisma/database status:
          *
-         * Admin UI will show REJECTED as HIDDEN.
+         * PENDING
+         * APPROVED
+         * REJECTED
+         *
+         * Admin UI:
+         *
+         * PENDING
+         * APPROVED
+         * HIDDEN
          */
         status:
           review.status === "REJECTED"
@@ -173,7 +274,8 @@ const getAllReviews = asyncHandler(
     res.status(200).json({
       success: true,
       data: formattedReviews,
-      message: "Reviews fetched successfully",
+      message:
+        "Reviews fetched successfully",
     });
   }
 );
@@ -187,12 +289,14 @@ const updateReviewStatus = asyncHandler(
     const { status } = req.body;
 
     /*
-     * Frontend statuses:
+     * Frontend accepts:
+     *
      * PENDING
      * APPROVED
      * HIDDEN
      *
-     * Database statuses:
+     * Database supports:
+     *
      * PENDING
      * APPROVED
      * REJECTED
@@ -211,7 +315,9 @@ const updateReviewStatus = asyncHandler(
       );
     }
 
+    // ------------------------------------------
     // Find review
+    // ------------------------------------------
     const review =
       await prisma.review.findUnique({
         where: {
@@ -226,16 +332,17 @@ const updateReviewStatus = asyncHandler(
       );
     }
 
-    /*
-     * Convert frontend HIDDEN
-     * to database REJECTED.
-     */
+    // ------------------------------------------
+    // Convert frontend status to DB status
+    // ------------------------------------------
     const databaseStatus =
       status === "HIDDEN"
         ? "REJECTED"
         : status;
 
-    // Update database
+    // ------------------------------------------
+    // Update review
+    // ------------------------------------------
     const updatedReview =
       await prisma.review.update({
         where: {
@@ -252,6 +359,7 @@ const updateReviewStatus = asyncHandler(
               id: true,
               fullName: true,
               email: true,
+              avatar: true,
             },
           },
 
@@ -264,10 +372,9 @@ const updateReviewStatus = asyncHandler(
         },
       });
 
-    /*
-     * Convert REJECTED back to HIDDEN
-     * before sending response to frontend.
-     */
+    // ------------------------------------------
+    // Convert DB status back for frontend
+    // ------------------------------------------
     const frontendStatus =
       updatedReview.status === "REJECTED"
         ? "HIDDEN"
@@ -314,8 +421,12 @@ const updateReviewStatus = asyncHandler(
   }
 );
 
+// ==========================================
+// EXPORTS
+// ==========================================
 export {
   createReview,
+  getProductReviews,
   getAllReviews,
   updateReviewStatus,
 };

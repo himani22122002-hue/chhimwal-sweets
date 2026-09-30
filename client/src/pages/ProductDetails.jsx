@@ -84,24 +84,35 @@ const ProductDetails = () => {
   }, [id]);
 
   // ==========================================
-  // LOAD REVIEWS
+  // LOAD APPROVED REVIEWS
   // ==========================================
   useEffect(() => {
     const loadReviews = async () => {
+      if (!id) return;
+
       try {
         setReviewsLoading(true);
 
-        /*
-          NOTE:
-          Currently backend GET /api/v1/reviews is admin-only.
-          So we don't call it here for customers.
+        const response = await fetch(
+          `${API_URL}/api/v1/reviews/product/${id}`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-          Newly submitted review will still be added
-          immediately to the current page using
-          handleReviewSubmitted().
-        */
+        const result = await response.json();
 
-        setReviews([]);
+        if (!response.ok) {
+          throw new Error(
+            result?.message || "Failed to fetch reviews"
+          );
+        }
+
+        setReviews(result?.data || []);
       } catch (error) {
         console.error("Failed to load reviews:", error);
         setReviews([]);
@@ -125,6 +136,8 @@ const ProductDetails = () => {
         newReview?.customer ||
         "You",
 
+      avatar: newReview?.user?.avatar || null,
+
       rating: Number(newReview?.rating || 0),
 
       title: newReview?.title || "",
@@ -141,10 +154,19 @@ const ProductDetails = () => {
       status: newReview?.status || "PENDING",
     };
 
-    setReviews((prevReviews) => [
-      formattedReview,
-      ...prevReviews,
-    ]);
+    /*
+      Newly submitted reviews are PENDING.
+      They should not appear in the public review
+      section until admin approves them.
+
+      So only add immediately if backend returns APPROVED.
+    */
+    if (formattedReview.status === "APPROVED") {
+      setReviews((prevReviews) => [
+        formattedReview,
+        ...prevReviews,
+      ]);
+    }
   };
 
   // ==========================================
@@ -333,27 +355,22 @@ const ProductDetails = () => {
               </p>
 
               <div className="flex flex-wrap gap-3">
-                {product.variants?.map(
-                  (variant) => (
-                    <button
-                      key={variant.id}
-                      onClick={() => {
-                        setSelectedVariant(
-                          variant
-                        );
-                        setQuantity(1);
-                      }}
-                      className={`px-6 py-2 rounded-lg border text-sm font-semibold ${
-                        selectedVariant?.id ===
-                        variant.id
-                          ? "border-[#7B1E2B] bg-[#7B1E2B] text-white"
-                          : "border-[#D4AF37]/50 text-[#7B1E2B] hover:bg-[#D4AF37]/10"
-                      } transition-all`}
-                    >
-                      {variant.weight}
-                    </button>
-                  )
-                )}
+                {product.variants?.map((variant) => (
+                  <button
+                    key={variant.id}
+                    onClick={() => {
+                      setSelectedVariant(variant);
+                      setQuantity(1);
+                    }}
+                    className={`px-6 py-2 rounded-lg border text-sm font-semibold ${
+                      selectedVariant?.id === variant.id
+                        ? "border-[#7B1E2B] bg-[#7B1E2B] text-white"
+                        : "border-[#D4AF37]/50 text-[#7B1E2B] hover:bg-[#D4AF37]/10"
+                    } transition-all`}
+                  >
+                    {variant.weight}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -367,10 +384,7 @@ const ProductDetails = () => {
                 <button
                   onClick={() =>
                     setQuantity(
-                      Math.max(
-                        1,
-                        quantity - 1
-                      )
+                      Math.max(1, quantity - 1)
                     )
                   }
                   className="p-3 text-[#7B1E2B] hover:bg-[#D4AF37]/10"
@@ -384,9 +398,7 @@ const ProductDetails = () => {
 
                 <button
                   onClick={() =>
-                    setQuantity(
-                      quantity + 1
-                    )
+                    setQuantity(quantity + 1)
                   }
                   className="p-3 text-[#7B1E2B] hover:bg-[#D4AF37]/10"
                 >
