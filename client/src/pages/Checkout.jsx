@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const Checkout = () => {
   const { cartItems, subtotal, clearCart } = useCart();
   const navigate = useNavigate();
@@ -55,32 +58,33 @@ const Checkout = () => {
         pinCode: formData.pinCode,
       };
 
-      const response = await fetch("/api/v1/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          cartItems: orderItems,
-          shippingAddress,
-          phone: formData.mobile,
-          paymentMethod: "COD",
-        }),
-      });
+      const response = await fetch(
+        `${API_URL}/api/v1/orders`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            cartItems: orderItems,
+            shippingAddress,
+            phone: formData.mobile,
+            paymentMethod: "COD",
+          }),
+        }
+      );
 
       const result = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          result.message || "Failed to place order"
+          result?.message || "Failed to place order"
         );
       }
 
-      // Clear cart only after successful order
       clearCart();
 
-      // Store order temporarily for success page
       localStorage.setItem(
         "lastOrder",
         JSON.stringify(result.data)
@@ -89,8 +93,10 @@ const Checkout = () => {
       navigate("/order-success");
     } catch (err) {
       console.error("Order placement failed:", err);
+
       setError(
-        err.message || "Something went wrong while placing your order."
+        err.message ||
+          "Something went wrong while placing your order."
       );
     } finally {
       setLoading(false);
@@ -116,9 +122,7 @@ const Checkout = () => {
         onSubmit={handleSubmit}
         className="grid grid-cols-1 lg:grid-cols-3 gap-8"
       >
-        {/* Customer + Address */}
         <div className="lg:col-span-2 space-y-6">
-
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <h2 className="text-xl font-bold text-[#7B1E2B] mb-4">
               Customer Details
@@ -225,10 +229,8 @@ const Checkout = () => {
           </div>
         </div>
 
-        {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
-
             <h2 className="text-xl font-bold text-[#7B1E2B] mb-4">
               Order Summary
             </h2>
@@ -253,7 +255,6 @@ const Checkout = () => {
               ))}
 
               <div className="border-t pt-4 space-y-2">
-
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span className="font-medium">
@@ -275,11 +276,9 @@ const Checkout = () => {
                     ₹{grandTotal}
                   </span>
                 </div>
-
               </div>
             </div>
 
-            {/* Payment */}
             <div className="bg-[#FFF8E7] p-4 rounded-lg mb-6 border border-[#D4AF37]/20">
               <label className="flex items-center gap-3 font-semibold text-[#7B1E2B]">
                 <input
@@ -304,7 +303,6 @@ const Checkout = () => {
             >
               {loading ? "Placing Order..." : "Place Order"}
             </button>
-
           </div>
         </div>
       </form>

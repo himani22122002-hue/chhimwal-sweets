@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,9 +17,16 @@ const MyOrders = () => {
       setLoading(true);
       setError("");
 
-      const response = await fetch("/api/v1/orders", {
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${API_URL}/api/v1/orders`,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const result = await response.json();
 
@@ -151,6 +161,7 @@ const MyOrders = () => {
           <div>
             <h3 className="font-bold text-[#7B1E2B] text-lg">
               {getOrderProductName(order)}
+
               {order.orderItems?.length > 1 && (
                 <span className="text-sm text-gray-500 ml-2">
                   +{order.orderItems.length - 1} more

@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Package } from "lucide-react";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const OrderDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -15,15 +18,23 @@ const OrderDetails = () => {
       setLoading(true);
       setError("");
 
-      const response = await fetch(`/api/v1/orders/${id}`, {
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${API_URL}/api/v1/orders/${id}`,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const result = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          result?.message || "Failed to fetch order details"
+          result?.message ||
+            "Failed to fetch order details"
         );
       }
 
@@ -32,7 +43,8 @@ const OrderDetails = () => {
       console.error("Failed to fetch order:", error);
 
       setError(
-        error?.message || "Unable to load order details."
+        error?.message ||
+          "Unable to load order details."
       );
     } finally {
       setLoading(false);
@@ -103,7 +115,9 @@ const OrderDetails = () => {
 
           <button
             type="button"
-            onClick={() => navigate("/profile?tab=orders")}
+            onClick={() =>
+              navigate("/profile?tab=orders")
+            }
             className="px-6 py-3 bg-[#7B1E2B] text-white rounded-xl"
           >
             Back to My Orders
@@ -116,21 +130,19 @@ const OrderDetails = () => {
   return (
     <div className="min-h-screen bg-[#FFF8E7] py-12 px-6">
       <div className="max-w-5xl mx-auto">
-
-        {/* Back Button */}
         <button
           type="button"
-          onClick={() => navigate("/profile?tab=orders")}
+          onClick={() =>
+            navigate("/profile?tab=orders")
+          }
           className="flex items-center gap-2 text-[#7B1E2B] mb-6 hover:underline"
         >
           <ArrowLeft size={18} />
           Back to My Orders
         </button>
 
-        {/* Header */}
         <div className="bg-white rounded-3xl shadow-lg p-8 mb-6">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <Package
@@ -159,11 +171,9 @@ const OrderDetails = () => {
             >
               {formatStatus(order.orderStatus)}
             </span>
-
           </div>
         </div>
 
-        {/* Products */}
         <div className="bg-white rounded-3xl shadow-lg p-8 mb-6">
           <h2 className="text-xl font-bold text-[#7B1E2B] mb-6">
             Ordered Items
@@ -184,7 +194,6 @@ const OrderDetails = () => {
                   className="flex flex-col sm:flex-row sm:justify-between gap-4 border-b border-gray-100 pb-5 last:border-b-0 last:pb-0"
                 >
                   <div className="flex gap-4">
-
                     {product?.image && (
                       <img
                         src={product.image}
@@ -200,7 +209,8 @@ const OrderDetails = () => {
 
                       <p className="text-sm text-gray-500 mt-1">
                         Variant:{" "}
-                        {item.productVariant?.weight || "N/A"}
+                        {item.productVariant?.weight ||
+                          "N/A"}
                       </p>
 
                       <p className="text-sm text-gray-500">
@@ -218,16 +228,15 @@ const OrderDetails = () => {
           </div>
         </div>
 
-        {/* Order Summary */}
         <div className="bg-white rounded-3xl shadow-lg p-8 mb-6">
           <h2 className="text-xl font-bold text-[#7B1E2B] mb-5">
             Order Summary
           </h2>
 
           <div className="space-y-3">
-
             <div className="flex justify-between text-gray-600">
               <span>Subtotal</span>
+
               <span>
                 ₹
                 {(
@@ -240,23 +249,31 @@ const OrderDetails = () => {
 
             <div className="flex justify-between text-gray-600">
               <span>Delivery Charge</span>
+
               <span>
-                ₹{Number(order.deliveryCharge || 0).toFixed(0)}
+                ₹
+                {Number(
+                  order.deliveryCharge || 0
+                ).toFixed(0)}
               </span>
             </div>
 
             {Number(order.discountApplied || 0) > 0 && (
               <div className="flex justify-between text-green-600">
                 <span>Discount</span>
+
                 <span>
                   -₹
-                  {Number(order.discountApplied).toFixed(0)}
+                  {Number(
+                    order.discountApplied
+                  ).toFixed(0)}
                 </span>
               </div>
             )}
 
             <div className="border-t pt-4 flex justify-between text-lg font-bold text-[#7B1E2B]">
               <span>Total</span>
+
               <span>
                 ₹{Number(order.totalAmount).toFixed(0)}
               </span>
@@ -264,14 +281,12 @@ const OrderDetails = () => {
           </div>
         </div>
 
-        {/* Payment */}
         <div className="bg-white rounded-3xl shadow-lg p-8 mb-6">
           <h2 className="text-xl font-bold text-[#7B1E2B] mb-5">
             Payment Information
           </h2>
 
           <div className="grid md:grid-cols-2 gap-5">
-
             <div>
               <p className="text-sm text-gray-500">
                 Payment Method
@@ -293,11 +308,9 @@ const OrderDetails = () => {
                 {formatStatus(order.paymentStatus)}
               </p>
             </div>
-
           </div>
         </div>
 
-        {/* Delivery Address */}
         <div className="bg-white rounded-3xl shadow-lg p-8">
           <h2 className="text-xl font-bold text-[#7B1E2B] mb-5">
             Delivery Address
@@ -330,7 +343,6 @@ const OrderDetails = () => {
             </p>
           </div>
         </div>
-
       </div>
     </div>
   );
