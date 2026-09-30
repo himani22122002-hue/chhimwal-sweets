@@ -1,1 +1,58 @@
 @import "tailwindcss";
+
+/* ================================
+   GLOBAL RESPONSIVE BASE
+================================ */
+
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Prevent long text / URLs from creating horizontal overflow */
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* Images should never overflow their container */
+img,
+video,
+svg {
+  max-width: 100%;
+}
+
+/* Better mobile tap behaviour */
+button,
+a,
+input,
+textarea,
+select {
+  max-width: 100%;
+}
+
+/* ================================
+   MOBILE RESPONSIVE HELPERS
+================================ */
+
+@media (max-width: 767px) {
+  h1 {
+    max-width: 100%;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
