@@ -192,6 +192,18 @@ model Gallery {
 
   @@map("gallery")
 }
+model StoreSettings {
+  id            String   @id @default(uuid())
+  storeInfo     Json
+  contactInfo   Json
+  seo           Json
+  policies      Json
+  hours         Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("store_settings")
+}
 model Address {
   id        String   @id @default(uuid())
   userId    String

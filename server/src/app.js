@@ -12,6 +12,7 @@ import addressRoutes from "./routes/addressRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import galleryRoutes from "./routes/galleryRoutes.js";
+import settingsRoutes from "./routes/settingsRoutes.js";
 
 import { errorHandler } from "./middleware/errorHandler.js";
 
@@ -46,6 +47,7 @@ app.use("/api/v1/addresses", addressRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/gallery", galleryRoutes);
+app.use("/api/v1/settings", settingsRoutes);
 
 app.use(errorHandler);
 

@@ -1,26 +1,35 @@
-const STORAGE_KEY = 'chhimwal_sweets_settings';
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-const defaultSettings = {
-  storeInfo: { name: 'Chhimwal Sweets', email: '', phone: '', address: '' },
-  contactInfo: { facebook: '', instagram: '', twitter: '' },
-  seo: { title: '', description: '' },
-  policies: { shipping: '', refund: '' },
-  hours: [
-    { day: 'Monday', open: '09:00', close: '21:00', isClosed: false },
-    { day: 'Tuesday', open: '09:00', close: '21:00', isClosed: false },
-    { day: 'Wednesday', open: '09:00', close: '21:00', isClosed: false },
-    { day: 'Thursday', open: '09:00', close: '21:00', isClosed: false },
-    { day: 'Friday', open: '09:00', close: '21:00', isClosed: false },
-    { day: 'Saturday', open: '10:00', close: '22:00', isClosed: false },
-    { day: 'Sunday', open: '10:00', close: '20:00', isClosed: false },
-  ],
+const SETTINGS_API = `${API_URL}/api/v1/settings`;
+
+export const getSettings = async () => {
+  const response = await fetch(SETTINGS_API);
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result?.message || "Failed to fetch settings");
+  }
+
+  return result?.data;
 };
 
-export const getSettings = () => {
-  const settings = localStorage.getItem(STORAGE_KEY);
-  return settings ? JSON.parse(settings) : defaultSettings;
-};
+export const saveSettings = async (settings) => {
+  const response = await fetch(SETTINGS_API, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(settings),
+  });
 
-export const saveSettings = (settings) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result?.message || "Failed to save settings");
+  }
+
+  return result?.data;
 };
