@@ -19,6 +19,9 @@ import RatingSummary from "../components/reviews/RatingSummary";
 import ReviewCard from "../components/reviews/ReviewCard";
 import ReviewForm from "../components/reviews/ReviewForm";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -30,11 +33,14 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+
   const { addToCart } = useCart();
 
-  const [reviews, setReviews] = useState([]);
-
-  // Load product
+  // ==========================================
+  // LOAD PRODUCT
+  // ==========================================
   useEffect(() => {
     const loadProduct = async () => {
       try {
@@ -45,6 +51,7 @@ const ProductDetails = () => {
 
         setProduct(data);
 
+        // Select first variant
         if (data?.variants?.length > 0) {
           setSelectedVariant(data.variants[0]);
         }
@@ -63,34 +70,6 @@ const ProductDetails = () => {
               .slice(0, 4)
           );
         }
-
-        // Load existing local reviews
-        const saved = localStorage.getItem(`reviews-${id}`);
-
-        if (saved) {
-          setReviews(JSON.parse(saved));
-        } else {
-          setReviews([
-            {
-              id: 1,
-              name: "Rahul S.",
-              rating: 5,
-              date: "2026-07-20",
-              title: "Excellent Taste!",
-              message:
-                "Very authentic Baal Mithai, reminds me of home.",
-            },
-            {
-              id: 2,
-              name: "Priya K.",
-              rating: 4,
-              date: "2026-07-22",
-              title: "Good quality",
-              message:
-                "Fresh and well-packaged. Will order again.",
-            },
-          ]);
-        }
       } catch (err) {
         console.error("Failed to load product:", err);
         setError("Unable to load product.");
@@ -99,29 +78,78 @@ const ProductDetails = () => {
       }
     };
 
-    loadProduct();
+    if (id) {
+      loadProduct();
+    }
   }, [id]);
 
-  // Save reviews
+  // ==========================================
+  // LOAD REVIEWS
+  // ==========================================
   useEffect(() => {
-    if (id && reviews.length > 0) {
-      localStorage.setItem(
-        `reviews-${id}`,
-        JSON.stringify(reviews)
-      );
-    }
-  }, [reviews, id]);
+    const loadReviews = async () => {
+      try {
+        setReviewsLoading(true);
 
-  const handleAddReview = (newReview) => {
-    setReviews([
-      {
-        id: Date.now(),
-        ...newReview,
-      },
-      ...reviews,
+        /*
+          NOTE:
+          Currently backend GET /api/v1/reviews is admin-only.
+          So we don't call it here for customers.
+
+          Newly submitted review will still be added
+          immediately to the current page using
+          handleReviewSubmitted().
+        */
+
+        setReviews([]);
+      } catch (error) {
+        console.error("Failed to load reviews:", error);
+        setReviews([]);
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+
+    loadReviews();
+  }, [id]);
+
+  // ==========================================
+  // WHEN NEW REVIEW IS SUBMITTED
+  // ==========================================
+  const handleReviewSubmitted = (newReview) => {
+    const formattedReview = {
+      id: newReview?.id || Date.now(),
+
+      name:
+        newReview?.user?.fullName ||
+        newReview?.customer ||
+        "You",
+
+      rating: Number(newReview?.rating || 0),
+
+      title: newReview?.title || "",
+
+      message:
+        newReview?.comment ||
+        newReview?.message ||
+        "",
+
+      date:
+        newReview?.createdAt ||
+        new Date().toLocaleDateString(),
+
+      status: newReview?.status || "PENDING",
+    };
+
+    setReviews((prevReviews) => [
+      formattedReview,
+      ...prevReviews,
     ]);
   };
 
+  // ==========================================
+  // LOADING
+  // ==========================================
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FFF8E7]">
@@ -132,6 +160,9 @@ const ProductDetails = () => {
     );
   }
 
+  // ==========================================
+  // ERROR
+  // ==========================================
   if (error || !product) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FFF8E7]">
@@ -153,54 +184,86 @@ const ProductDetails = () => {
 
   const rating = Number(product.averageRating || 0);
 
-  // Add to Cart
+  // ==========================================
+  // ADD TO CART
+  // ==========================================
   const handleAddToCart = () => {
     if (!selectedVariant) return;
 
-    addToCart(product, selectedVariant, quantity);
+    addToCart(
+      product,
+      selectedVariant,
+      quantity
+    );
   };
 
-  // Buy Now
+  // ==========================================
+  // BUY NOW
+  // ==========================================
   const handleBuyNow = () => {
     if (!selectedVariant) return;
 
-    addToCart(product, selectedVariant, quantity);
+    addToCart(
+      product,
+      selectedVariant,
+      quantity
+    );
+
     navigate("/checkout");
   };
 
+  // ==========================================
+  // UI
+  // ==========================================
   return (
     <div className="min-h-screen bg-[#FFF8E7] py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-7xl mx-auto">
 
-        {/* Breadcrumb */}
+        {/* =====================================
+            BREADCRUMB
+        ====================================== */}
         <nav className="text-xs font-semibold text-[#7B1E2B]/60 mb-8 uppercase tracking-widest">
           <Link
             to="/"
             className="hover:text-[#7B1E2B]"
           >
             Home
-          </Link>{" "}
-          /{" "}
+          </Link>
+
+          {" / "}
+
           <Link
             to="/products"
             className="hover:text-[#7B1E2B]"
           >
             Shop
-          </Link>{" "}
-          /{" "}
+          </Link>
+
+          {" / "}
+
           <span className="text-[#7B1E2B]">
             {product.name}
           </span>
         </nav>
 
-        {/* Product */}
+        {/* =====================================
+            PRODUCT SECTION
+        ====================================== */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-20">
 
-          {/* Image */}
+          {/* PRODUCT IMAGE */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
+            initial={{
+              opacity: 0,
+              scale: 0.98,
+            }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+            }}
+            transition={{
+              duration: 0.6,
+            }}
           >
             <img
               src={product.image}
@@ -209,18 +272,27 @@ const ProductDetails = () => {
             />
           </motion.div>
 
-          {/* Details */}
+          {/* PRODUCT DETAILS */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
+            initial={{
+              opacity: 0,
+              x: 20,
+            }}
+            animate={{
+              opacity: 1,
+              x: 0,
+            }}
+            transition={{
+              duration: 0.6,
+            }}
             className="space-y-6"
           >
+            {/* NAME */}
             <h1 className="text-5xl font-extrabold text-[#7B1E2B] leading-tight">
               {product.name}
             </h1>
 
-            {/* Rating */}
+            {/* RATING */}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
@@ -240,52 +312,66 @@ const ProductDetails = () => {
               </span>
             </div>
 
-            {/* Price */}
+            {/* PRICE */}
             {selectedVariant && (
               <p className="text-4xl font-bold text-[#7B1E2B]">
                 ₹{Number(selectedVariant.price)}
               </p>
             )}
 
-            {/* Description */}
+            {/* DESCRIPTION */}
             <p className="text-gray-600 leading-relaxed">
               {product.description}
             </p>
 
-            {/* Variants */}
+            {/* =================================
+                VARIANTS
+            ================================== */}
             <div className="space-y-3">
               <p className="text-xs font-bold uppercase tracking-widest text-gray-500">
                 Select Size
               </p>
 
               <div className="flex flex-wrap gap-3">
-                {product.variants?.map((variant) => (
-                  <button
-                    key={variant.id}
-                    onClick={() => {
-                      setSelectedVariant(variant);
-                      setQuantity(1);
-                    }}
-                    className={`px-6 py-2 rounded-lg border text-sm font-semibold ${
-                      selectedVariant?.id === variant.id
-                        ? "border-[#7B1E2B] bg-[#7B1E2B] text-white"
-                        : "border-[#D4AF37]/50 text-[#7B1E2B] hover:bg-[#D4AF37]/10"
-                    } transition-all`}
-                  >
-                    {variant.weight}
-                  </button>
-                ))}
+                {product.variants?.map(
+                  (variant) => (
+                    <button
+                      key={variant.id}
+                      onClick={() => {
+                        setSelectedVariant(
+                          variant
+                        );
+                        setQuantity(1);
+                      }}
+                      className={`px-6 py-2 rounded-lg border text-sm font-semibold ${
+                        selectedVariant?.id ===
+                        variant.id
+                          ? "border-[#7B1E2B] bg-[#7B1E2B] text-white"
+                          : "border-[#D4AF37]/50 text-[#7B1E2B] hover:bg-[#D4AF37]/10"
+                      } transition-all`}
+                    >
+                      {variant.weight}
+                    </button>
+                  )
+                )}
               </div>
             </div>
 
-            {/* Actions */}
+            {/* =================================
+                ACTIONS
+            ================================== */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
 
-              {/* Quantity */}
+              {/* QUANTITY */}
               <div className="flex items-center border border-[#7B1E2B] rounded-lg">
                 <button
                   onClick={() =>
-                    setQuantity(Math.max(1, quantity - 1))
+                    setQuantity(
+                      Math.max(
+                        1,
+                        quantity - 1
+                      )
+                    )
                   }
                   className="p-3 text-[#7B1E2B] hover:bg-[#D4AF37]/10"
                 >
@@ -298,7 +384,9 @@ const ProductDetails = () => {
 
                 <button
                   onClick={() =>
-                    setQuantity(quantity + 1)
+                    setQuantity(
+                      quantity + 1
+                    )
                   }
                   className="p-3 text-[#7B1E2B] hover:bg-[#D4AF37]/10"
                 >
@@ -306,7 +394,7 @@ const ProductDetails = () => {
                 </button>
               </div>
 
-              {/* Add to Cart */}
+              {/* ADD TO CART */}
               <button
                 onClick={handleAddToCart}
                 className="flex-1 flex items-center justify-center gap-2 bg-[#7B1E2B] text-white py-3 rounded-lg font-bold hover:bg-[#5a1620] transition-colors"
@@ -315,7 +403,7 @@ const ProductDetails = () => {
                 Add to Cart
               </button>
 
-              {/* Buy Now */}
+              {/* BUY NOW */}
               <button
                 onClick={handleBuyNow}
                 className="flex-1 flex items-center justify-center gap-2 bg-[#D4AF37] text-white py-3 rounded-lg font-bold hover:bg-[#b8952b] transition-colors"
@@ -325,11 +413,14 @@ const ProductDetails = () => {
               </button>
             </div>
 
-            {/* Highlights */}
+            {/* =================================
+                HIGHLIGHTS
+            ================================== */}
             <div className="grid grid-cols-3 gap-4 border-t border-[#7B1E2B]/10 pt-6 mt-6">
 
               <div className="flex flex-col items-center gap-2 text-[#7B1E2B]">
                 <Award size={24} />
+
                 <span className="text-xs font-bold uppercase">
                   Authentic
                 </span>
@@ -337,6 +428,7 @@ const ProductDetails = () => {
 
               <div className="flex flex-col items-center gap-2 text-[#7B1E2B]">
                 <Truck size={24} />
+
                 <span className="text-xs font-bold uppercase">
                   Fast Delivery
                 </span>
@@ -344,6 +436,7 @@ const ProductDetails = () => {
 
               <div className="flex flex-col items-center gap-2 text-[#7B1E2B]">
                 <Package size={24} />
+
                 <span className="text-xs font-bold uppercase">
                   Safe Pack
                 </span>
@@ -353,29 +446,60 @@ const ProductDetails = () => {
           </motion.div>
         </div>
 
-        {/* Reviews */}
+        {/* =====================================
+            REVIEWS
+        ====================================== */}
         <div className="border-t border-[#7B1E2B]/10 pt-16 grid grid-cols-1 lg:grid-cols-2 gap-12">
 
+          {/* EXISTING REVIEWS */}
           <div>
-            <RatingSummary reviews={reviews} />
+            <RatingSummary
+              reviews={reviews}
+            />
 
             <div className="mt-8">
-              {reviews.map((review) => (
-                <ReviewCard
-                  key={review.id}
-                  review={review}
-                />
-              ))}
+
+              {reviewsLoading ? (
+                <p className="text-gray-500">
+                  Loading reviews...
+                </p>
+              ) : reviews.length === 0 ? (
+                <div className="bg-white rounded-2xl p-6 text-center shadow-sm">
+                  <p className="text-gray-500">
+                    No reviews yet.
+                  </p>
+
+                  <p className="text-sm text-gray-400 mt-1">
+                    Be the first to review this product!
+                  </p>
+                </div>
+              ) : (
+                reviews.map((review) => (
+                  <ReviewCard
+                    key={review.id}
+                    review={review}
+                  />
+                ))
+              )}
+
             </div>
           </div>
 
+          {/* WRITE REVIEW */}
           <div>
-            <ReviewForm onAddReview={handleAddReview} />
+            <ReviewForm
+              productId={id}
+              onReviewSubmitted={
+                handleReviewSubmitted
+              }
+            />
           </div>
 
         </div>
 
-        {/* Related Products */}
+        {/* =====================================
+            RELATED PRODUCTS
+        ====================================== */}
         {relatedProducts.length > 0 && (
           <div className="border-t border-[#7B1E2B]/10 pt-16 mt-16">
 
@@ -385,16 +509,22 @@ const ProductDetails = () => {
 
             <motion.div
               className="flex gap-6 overflow-x-auto pb-6 snap-x scrollbar-hide"
-              whileTap={{ cursor: "grabbing" }}
+              whileTap={{
+                cursor: "grabbing",
+              }}
             >
-              {relatedProducts.map((relatedProduct) => (
-                <div
-                  key={relatedProduct.id}
-                  className="min-w-[280px] snap-center"
-                >
-                  <ProductCard product={relatedProduct} />
-                </div>
-              ))}
+              {relatedProducts.map(
+                (relatedProduct) => (
+                  <div
+                    key={relatedProduct.id}
+                    className="min-w-[280px] snap-center"
+                  >
+                    <ProductCard
+                      product={relatedProduct}
+                    />
+                  </div>
+                )
+              )}
             </motion.div>
 
           </div>

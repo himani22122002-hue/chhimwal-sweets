@@ -20,15 +20,32 @@ import {
   Users,
   Star,
   AlertTriangle,
-  Plus,
-  UploadCloud,
   MessageSquare,
 } from "lucide-react";
 
 import { ProductService } from "../../services/ProductService";
 import { getOrders } from "../../services/OrderService";
-import { ReviewService } from "../../services/ReviewService";
-import { getCustomers } from "../../services/CustomerService";
+
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+const getApiData = async (url) => {
+  const response = await fetch(url, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result?.message || "Failed to fetch data");
+  }
+
+  return result?.data || [];
+};
 
 const AdminDashboard = () => {
   const [data, setData] = useState({
@@ -47,68 +64,36 @@ const AdminDashboard = () => {
         setLoading(true);
         setError("");
 
-        const [productsResult, ordersResult, reviewsResult, customersResult] =
-          await Promise.all([
-            Promise.resolve(ProductService.getProducts()),
-            Promise.resolve(getOrders()),
-            Promise.resolve(ReviewService.getReviews()),
-            Promise.resolve(getCustomers()),
-          ]);
-
-        /*
-          APIs/services may return:
-          - array
-          - { data: array }
-          - { data: { data: array } }
-          - Axios response
-        */
+        const [
+          productsResult,
+          ordersResult,
+          reviewsResult,
+          customersResult,
+        ] = await Promise.all([
+          ProductService.getProducts(),
+          getOrders(),
+          getApiData(`${API_URL}/api/v1/reviews`),
+          getApiData(`${API_URL}/api/v1/users/customers`),
+        ]);
 
         const extractArray = (result) => {
-          if (Array.isArray(result)) {
-            return result;
-          }
-
-          if (Array.isArray(result?.data)) {
-            return result.data;
-          }
-
+          if (Array.isArray(result)) return result;
+          if (Array.isArray(result?.data)) return result.data;
           if (Array.isArray(result?.data?.data)) {
             return result.data.data;
           }
-
-          if (Array.isArray(result?.products)) {
-            return result.products;
-          }
-
-          if (Array.isArray(result?.orders)) {
-            return result.orders;
-          }
-
-          if (Array.isArray(result?.reviews)) {
-            return result.reviews;
-          }
-
-          if (Array.isArray(result?.customers)) {
-            return result.customers;
-          }
-
           return [];
         };
 
-        const products = extractArray(productsResult);
-        const orders = extractArray(ordersResult);
-        const reviews = extractArray(reviewsResult);
-        const customers = extractArray(customersResult);
-
         setData({
-          products,
-          orders,
-          reviews,
-          customers,
+          products: extractArray(productsResult),
+          orders: extractArray(ordersResult),
+          reviews: extractArray(reviewsResult),
+          customers: extractArray(customersResult),
         });
       } catch (err) {
         console.error("Dashboard loading error:", err);
-        setError("Failed to load dashboard data.");
+        setError(err.message || "Failed to load dashboard data.");
       } finally {
         setLoading(false);
       }
@@ -131,7 +116,9 @@ const AdminDashboard = () => {
     return (
       <div className="min-h-screen bg-[#FFF8E7] p-8">
         <div className="bg-white rounded-3xl shadow-md p-8 text-center">
-          <p className="text-red-600 font-semibold mb-4">{error}</p>
+          <p className="text-red-600 font-semibold mb-4">
+            {error}
+          </p>
 
           <button
             type="button"
@@ -145,14 +132,14 @@ const AdminDashboard = () => {
     );
   }
 
-  // -----------------------------
-  // Dashboard calculations
-  // -----------------------------
+  // =========================
+  // HELPERS
+  // =========================
 
   const getOrderTotal = (order) => {
     return Number(
-      order?.total ??
-        order?.totalAmount ??
+      order?.totalAmount ??
+        order?.total ??
         order?.grandTotal ??
         order?.amount ??
         0
@@ -160,12 +147,33 @@ const AdminDashboard = () => {
   };
 
   const getOrderDate = (order) => {
-    return order?.createdAt || order?.date || order?.orderDate || null;
+    return (
+      order?.createdAt ||
+      order?.date ||
+      order?.orderDate ||
+      null
+    );
   };
 
   const getOrderStatus = (order) => {
-    return String(order?.status || "").toLowerCase();
+    return String(
+      order?.orderStatus ||
+        order?.status ||
+        ""
+    ).toUpperCase();
   };
+
+  const getCustomerName = (order) => {
+    return (
+      order?.user?.fullName ||
+      order?.customer?.name ||
+      "Customer"
+    );
+  };
+
+  // =========================
+  // METRICS
+  // =========================
 
   const totalRevenue = data.orders.reduce(
     (sum, order) => sum + getOrderTotal(order),
@@ -173,46 +181,50 @@ const AdminDashboard = () => {
   );
 
   const totalOrders = data.orders.length;
-
   const totalProducts = data.products.length;
-
   const totalCustomers = data.customers.length;
 
   const pendingOrders = data.orders.filter((order) => {
     const status = getOrderStatus(order);
 
     return (
-      status === "pending" ||
-      status === "processing" ||
-      status === "confirmed"
+      status === "PENDING" ||
+      status === "PROCESSING"
     );
   }).length;
 
-  const deliveredOrders = data.orders.filter((order) => {
-    return getOrderStatus(order) === "delivered";
-  }).length;
+  const deliveredOrders = data.orders.filter(
+    (order) =>
+      getOrderStatus(order) === "DELIVERED"
+  ).length;
 
   const totalReviews = data.reviews.length;
 
   const ratingSum = data.reviews.reduce(
-    (sum, review) => sum + Number(review?.rating || 0),
+    (sum, review) =>
+      sum + Number(review?.rating || 0),
     0
   );
 
   const avgRating =
-    totalReviews > 0 ? (ratingSum / totalReviews).toFixed(1) : "0.0";
+    totalReviews > 0
+      ? (ratingSum / totalReviews).toFixed(1)
+      : "0.0";
 
-  // -----------------------------
-  // Low stock
-  // -----------------------------
+  // =========================
+  // LOW STOCK
+  // =========================
 
   const lowStockProducts = data.products
-    .filter((product) => Number(product?.stock || 0) < 10)
+    .filter(
+      (product) =>
+        Number(product?.stock || 0) < 10
+    )
     .slice(0, 5);
 
-  // -----------------------------
-  // Recent orders
-  // -----------------------------
+  // =========================
+  // RECENT ORDERS
+  // =========================
 
   const recentOrders = [...data.orders]
     .sort(
@@ -222,33 +234,25 @@ const AdminDashboard = () => {
     )
     .slice(0, 5);
 
-  // -----------------------------
-  // Recent reviews
-  // -----------------------------
+  // =========================
+  // RECENT REVIEWS
+  // =========================
 
   const recentReviews = [...data.reviews]
     .sort(
       (a, b) =>
-        new Date(b?.createdAt || b?.date || 0) -
-        new Date(a?.createdAt || a?.date || 0)
+        new Date(
+          b?.createdAt || b?.date || 0
+        ) -
+        new Date(
+          a?.createdAt || a?.date || 0
+        )
     )
     .slice(0, 5);
 
-  // -----------------------------
-  // Top selling products
-  // -----------------------------
-
-  const topSellingProducts = [...data.products]
-    .sort(
-      (a, b) =>
-        Number(b?.sold || b?.salesCount || 0) -
-        Number(a?.sold || a?.salesCount || 0)
-    )
-    .slice(0, 5);
-
-  // -----------------------------
-  // Monthly sales
-  // -----------------------------
+  // =========================
+  // SALES DATA
+  // =========================
 
   const monthlySalesMap = {};
 
@@ -257,9 +261,12 @@ const AdminDashboard = () => {
 
     if (!date) return;
 
-    const month = new Date(date).toLocaleString("en-IN", {
-      month: "short",
-    });
+    const month = new Date(date).toLocaleString(
+      "en-IN",
+      {
+        month: "short",
+      }
+    );
 
     if (!monthlySalesMap[month]) {
       monthlySalesMap[month] = 0;
@@ -268,16 +275,31 @@ const AdminDashboard = () => {
     monthlySalesMap[month] += getOrderTotal(order);
   });
 
-  const salesData = Object.entries(monthlySalesMap).map(
-    ([month, sales]) => ({
-      month,
-      sales,
-    })
-  );
+  const salesData = Object.entries(
+    monthlySalesMap
+  ).map(([month, sales]) => ({
+    month,
+    sales,
+  }));
 
-  // -----------------------------
-  // Order status chart
-  // -----------------------------
+  // =========================
+  // ORDER STATUS
+  // =========================
+
+  const processingOrders = data.orders.filter(
+    (order) =>
+      getOrderStatus(order) === "PROCESSING"
+  ).length;
+
+  const shippedOrders = data.orders.filter(
+    (order) =>
+      getOrderStatus(order) === "SHIPPED"
+  ).length;
+
+  const cancelledOrders = data.orders.filter(
+    (order) =>
+      getOrderStatus(order) === "CANCELLED"
+  ).length;
 
   const statusData = [
     {
@@ -285,28 +307,28 @@ const AdminDashboard = () => {
       value: pendingOrders,
     },
     {
+      name: "Processing",
+      value: processingOrders,
+    },
+    {
+      name: "Shipped",
+      value: shippedOrders,
+    },
+    {
       name: "Delivered",
       value: deliveredOrders,
     },
-  ];
-
-  // -----------------------------
-  // Customer name helper
-  // -----------------------------
-
-  const getCustomerName = (order) => {
-    return (
-      order?.user?.fullName ||
-      order?.customer?.name ||
-      order?.customer?.fullName ||
-      order?.userName ||
-      "Customer"
-    );
-  };
+    {
+      name: "Cancelled",
+      value: cancelledOrders,
+    },
+  ].filter((item) => item.value > 0);
 
   return (
     <div className="p-6 bg-[#FFF8E7] min-h-screen text-[#7B1E2B]">
-      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-8">
+        Admin Dashboard
+      </h1>
 
       {/* ================= METRICS ================= */}
 
@@ -314,7 +336,9 @@ const AdminDashboard = () => {
         {[
           {
             label: "Total Revenue",
-            value: `₹${totalRevenue.toLocaleString("en-IN")}`,
+            value: `₹${totalRevenue.toLocaleString(
+              "en-IN"
+            )}`,
             icon: ShoppingCart,
           },
           {
@@ -362,12 +386,16 @@ const AdminDashboard = () => {
               className="bg-white p-6 rounded-3xl shadow-md border-b-4 border-[#D4AF37]"
             >
               <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-500">{metric.label}</span>
+                <span className="text-gray-500">
+                  {metric.label}
+                </span>
 
                 <Icon className="w-5 h-5 text-[#D4AF37]" />
               </div>
 
-              <p className="text-2xl font-bold">{metric.value}</p>
+              <p className="text-2xl font-bold">
+                {metric.value}
+              </p>
             </motion.div>
           );
         })}
@@ -376,16 +404,22 @@ const AdminDashboard = () => {
       {/* ================= CHARTS ================= */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Sales */}
+
+        {/* SALES */}
         <div className="bg-white p-6 rounded-3xl shadow-md">
-          <h2 className="text-xl font-bold mb-4">Monthly Sales</h2>
+          <h2 className="text-xl font-bold mb-4">
+            Monthly Sales
+          </h2>
 
           {salesData.length === 0 ? (
             <div className="h-[300px] flex items-center justify-center text-gray-500">
               No sales data available
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer
+              width="100%"
+              height={300}
+            >
               <AreaChart data={salesData}>
                 <CartesianGrid strokeDasharray="3 3" />
 
@@ -395,7 +429,9 @@ const AdminDashboard = () => {
 
                 <Tooltip
                   formatter={(value) => [
-                    `₹${Number(value).toLocaleString("en-IN")}`,
+                    `₹${Number(value).toLocaleString(
+                      "en-IN"
+                    )}`,
                     "Sales",
                   ]}
                 />
@@ -412,16 +448,21 @@ const AdminDashboard = () => {
           )}
         </div>
 
-        {/* Order Status */}
+        {/* ORDER STATUS */}
         <div className="bg-white p-6 rounded-3xl shadow-md">
-          <h2 className="text-xl font-bold mb-4">Order Status</h2>
+          <h2 className="text-xl font-bold mb-4">
+            Order Status
+          </h2>
 
-          {totalOrders === 0 ? (
+          {statusData.length === 0 ? (
             <div className="h-[300px] flex items-center justify-center text-gray-500">
               No orders available
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer
+              width="100%"
+              height={300}
+            >
               <PieChart>
                 <Pie
                   data={statusData}
@@ -432,8 +473,20 @@ const AdminDashboard = () => {
                   innerRadius={60}
                   outerRadius={80}
                 >
-                  <Cell fill="#D4AF37" />
-                  <Cell fill="#7B1E2B" />
+                  {statusData.map((_, index) => (
+                    <Cell
+                      key={index}
+                      fill={
+                        [
+                          "#D4AF37",
+                          "#7B1E2B",
+                          "#B45309",
+                          "#16A34A",
+                          "#DC2626",
+                        ][index]
+                      }
+                    />
+                  ))}
                 </Pie>
 
                 <Tooltip />
@@ -445,15 +498,20 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* ================= ACTIVITY LISTS ================= */}
+      {/* ================= LISTS ================= */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Recent Orders */}
+
+        {/* RECENT ORDERS */}
         <div className="bg-white p-6 rounded-3xl shadow-md">
-          <h2 className="text-xl font-bold mb-4">Recent Orders</h2>
+          <h2 className="text-xl font-bold mb-4">
+            Recent Orders
+          </h2>
 
           {recentOrders.length === 0 ? (
-            <p className="text-gray-500">No orders yet.</p>
+            <p className="text-gray-500">
+              No orders yet.
+            </p>
           ) : (
             recentOrders.map((order, index) => (
               <div
@@ -461,129 +519,123 @@ const AdminDashboard = () => {
                 className="py-3 border-b last:border-b-0"
               >
                 <p className="font-semibold">
-                  {order?.orderNumber || order?.id || `Order ${index + 1}`}
+                  {order?.orderNumber ||
+                    order?.id ||
+                    `Order ${index + 1}`}
                 </p>
 
                 <p className="text-sm text-gray-500">
                   {getCustomerName(order)} • ₹
-                  {getOrderTotal(order).toLocaleString("en-IN")}
+                  {getOrderTotal(order).toLocaleString(
+                    "en-IN"
+                  )}
+                </p>
+
+                <p className="text-xs text-gray-400 mt-1">
+                  {getOrderStatus(order)}
                 </p>
               </div>
             ))
           )}
         </div>
 
-        {/* Low Stock */}
+        {/* LOW STOCK */}
         <div className="bg-white p-6 rounded-3xl shadow-md">
-          <h2 className="text-xl font-bold mb-4">Low Stock Products</h2>
+          <h2 className="text-xl font-bold mb-4">
+            Low Stock Products
+          </h2>
 
           {lowStockProducts.length === 0 ? (
-            <p className="text-gray-500">No low-stock products.</p>
+            <p className="text-gray-500">
+              No low-stock products.
+            </p>
           ) : (
-            lowStockProducts.map((product, index) => (
-              <div
-                key={product?.id || index}
-                className="py-3 border-b last:border-b-0"
-              >
-                <p className="font-semibold">
-                  {product?.name || "Unnamed Product"}
-                </p>
+            lowStockProducts.map(
+              (product, index) => (
+                <div
+                  key={product?.id || index}
+                  className="py-3 border-b last:border-b-0"
+                >
+                  <p className="font-semibold">
+                    {product?.name ||
+                      "Unnamed Product"}
+                  </p>
 
-                <p className="text-sm text-red-500">
-                  {product?.stock || 0} left
-                </p>
-              </div>
-            ))
+                  <p className="text-sm text-red-500">
+                    {product?.stock || 0} left
+                  </p>
+                </div>
+              )
+            )
           )}
         </div>
 
-        {/* Top Selling */}
+        {/* RECENT REVIEWS */}
         <div className="bg-white p-6 rounded-3xl shadow-md">
-          <h2 className="text-xl font-bold mb-4">Top Selling Products</h2>
-
-          {topSellingProducts.length === 0 ? (
-            <p className="text-gray-500">No product data available.</p>
-          ) : (
-            topSellingProducts.map((product, index) => (
-              <div
-                key={product?.id || index}
-                className="py-3 border-b last:border-b-0"
-              >
-                <p className="font-semibold">
-                  {product?.name || "Unnamed Product"}
-                </p>
-
-                <p className="text-sm text-gray-500">
-                  Sold: {product?.sold || product?.salesCount || 0}
-                </p>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Recent Reviews */}
-        <div className="bg-white p-6 rounded-3xl shadow-md">
-          <h2 className="text-xl font-bold mb-4">Recent Reviews</h2>
+          <h2 className="text-xl font-bold mb-4">
+            Recent Reviews
+          </h2>
 
           {recentReviews.length === 0 ? (
-            <p className="text-gray-500">No reviews yet.</p>
+            <p className="text-gray-500">
+              No reviews yet.
+            </p>
           ) : (
-            recentReviews.map((review, index) => (
-              <div
-                key={review?.id || index}
-                className="py-3 border-b last:border-b-0"
-              >
-                <p className="font-semibold">
-                  {review?.customer ||
-                    review?.user?.fullName ||
-                    "Customer"}
-                </p>
+            recentReviews.map(
+              (review, index) => (
+                <div
+                  key={review?.id || index}
+                  className="py-3 border-b last:border-b-0"
+                >
+                  <p className="font-semibold">
+                    {review?.customer ||
+                      review?.user?.fullName ||
+                      "Customer"}
+                  </p>
 
-                <p className="text-sm text-gray-500">
-                  Rating: {review?.rating || 0} ⭐
-                </p>
-              </div>
-            ))
+                  <p className="text-sm text-gray-500">
+                    {review?.product || "Product"} •{" "}
+                    {review?.rating || 0} ⭐
+                  </p>
+                </div>
+              )
+            )
           )}
         </div>
-      </div>
 
-      {/* ================= QUICK ACTIONS ================= */}
+        {/* QUICK STATS */}
+        <div className="bg-white p-6 rounded-3xl shadow-md">
+          <h2 className="text-xl font-bold mb-4">
+            Order Summary
+          </h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          {
-            label: "Add Product",
-            icon: Plus,
-          },
-          {
-            label: "View Orders",
-            icon: ShoppingCart,
-          },
-          {
-            label: "Upload Image",
-            icon: UploadCloud,
-          },
-          {
-            label: "Manage Customers",
-            icon: Users,
-          },
-        ].map((action, index) => {
-          const Icon = action.icon;
+          <div className="space-y-4">
+            <div className="flex justify-between">
+              <span>Pending</span>
+              <strong>{pendingOrders}</strong>
+            </div>
 
-          return (
-            <motion.button
-              key={index}
-              type="button"
-              whileHover={{ scale: 1.05 }}
-              className="bg-[#7B1E2B] text-white p-4 rounded-xl flex items-center justify-center gap-2"
-            >
-              <Icon className="w-5 h-5" />
+            <div className="flex justify-between">
+              <span>Processing</span>
+              <strong>{processingOrders}</strong>
+            </div>
 
-              {action.label}
-            </motion.button>
-          );
-        })}
+            <div className="flex justify-between">
+              <span>Shipped</span>
+              <strong>{shippedOrders}</strong>
+            </div>
+
+            <div className="flex justify-between">
+              <span>Delivered</span>
+              <strong>{deliveredOrders}</strong>
+            </div>
+
+            <div className="flex justify-between">
+              <span>Cancelled</span>
+              <strong>{cancelledOrders}</strong>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
