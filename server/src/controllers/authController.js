@@ -11,6 +11,17 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { generateToken } from "../utils/generateToken.js";
 
 
+const getCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite:
+    process.env.NODE_ENV === "production"
+      ? "none"
+      : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
+
+
 const register = asyncHandler(async (req, res) => {
   const { fullName, email, phone, password } = req.body;
 
@@ -19,7 +30,10 @@ const register = asyncHandler(async (req, res) => {
   }
 
   if (password.length < 8) {
-    throw new ApiError(400, "Password must be at least 8 characters");
+    throw new ApiError(
+      400,
+      "Password must be at least 8 characters"
+    );
   }
 
   const userExists = await prisma.user.findUnique({
@@ -43,12 +57,7 @@ const register = asyncHandler(async (req, res) => {
 
   const token = generateToken(user.id);
 
-  res.cookie("jwt", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  res.cookie("jwt", token, getCookieOptions());
 
   return res.status(201).json(
     new ApiResponse(
@@ -73,18 +82,16 @@ const login = asyncHandler(async (req, res) => {
     where: { email },
   });
 
-  if (!user || !(await bcrypt.compare(password, user.password))) {
+  if (
+    !user ||
+    !(await bcrypt.compare(password, user.password))
+  ) {
     throw new ApiError(401, "Invalid email or password");
   }
 
   const token = generateToken(user.id);
 
-  res.cookie("jwt", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  res.cookie("jwt", token, getCookieOptions());
 
   return res.status(200).json(
     new ApiResponse(
@@ -105,18 +112,31 @@ const login = asyncHandler(async (req, res) => {
 const logout = asyncHandler(async (req, res) => {
   res.cookie("jwt", "", {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite:
+      process.env.NODE_ENV === "production"
+        ? "none"
+        : "lax",
     expires: new Date(0),
   });
 
   return res.status(200).json(
-    new ApiResponse(200, {}, "Logged out successfully")
+    new ApiResponse(
+      200,
+      {},
+      "Logged out successfully"
+    )
   );
 });
 
 
 const getMe = asyncHandler(async (req, res) => {
   return res.status(200).json(
-    new ApiResponse(200, req.user, "User profile")
+    new ApiResponse(
+      200,
+      req.user,
+      "User profile"
+    )
   );
 });
 
@@ -125,7 +145,10 @@ const updateProfile = asyncHandler(async (req, res) => {
   const { fullName, phone } = req.body;
 
   if (!fullName || !fullName.trim()) {
-    throw new ApiError(400, "Full name is required");
+    throw new ApiError(
+      400,
+      "Full name is required"
+    );
   }
 
   const updatedUser = await prisma.user.update({
@@ -162,14 +185,24 @@ const changePassword = asyncHandler(async (req, res) => {
     where: { id: req.user.id },
   });
 
-  if (!(await bcrypt.compare(oldPassword, user.password))) {
-    throw new ApiError(400, "Invalid old password");
+  if (
+    !(await bcrypt.compare(oldPassword, user.password))
+  ) {
+    throw new ApiError(
+      400,
+      "Invalid old password"
+    );
   }
 
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  const hashedPassword = await bcrypt.hash(
+    newPassword,
+    10
+  );
 
   await prisma.user.update({
-    where: { id: req.user.id },
+    where: {
+      id: req.user.id,
+    },
     data: {
       password: hashedPassword,
     },
