@@ -147,7 +147,6 @@ export default function Navbar() {
 
         {isProfileOpen && (
           <div className="absolute right-0 top-12 w-56 bg-[#FFF8E7] rounded-xl shadow-2xl border border-[#D4AF37]/20 py-2 z-[100]">
-            {/* User info */}
             <div className="px-4 py-3 border-b border-[#7B1E2B]/10">
               <p className="font-bold text-[#7B1E2B] truncate">
                 {user.fullName}
@@ -164,7 +163,6 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Admin */}
             {isAdmin && (
               <button
                 onClick={() => {
@@ -178,7 +176,6 @@ export default function Navbar() {
               </button>
             )}
 
-            {/* Profile */}
             <button
               onClick={handleProfile}
               className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 hover:bg-[#FDF3D5] hover:text-[#7B1E2B]"
@@ -187,7 +184,6 @@ export default function Navbar() {
               My Profile
             </button>
 
-            {/* Orders */}
             <button
               onClick={handleOrders}
               className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 hover:bg-[#FDF3D5] hover:text-[#7B1E2B]"
@@ -198,7 +194,6 @@ export default function Navbar() {
 
             <div className="border-t border-[#7B1E2B]/10 my-1" />
 
-            {/* Logout */}
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-4 py-3 text-left text-red-600 hover:bg-red-50"
@@ -284,7 +279,7 @@ export default function Navbar() {
                   {CATEGORIES.map((cat) => (
                     <NavLink
                       key={cat}
-                      to={`/products/${CATEGORY_MAP[cat]}`}
+                      to={`/products/category/${CATEGORY_MAP[cat]}`}
                       className="block px-4 py-2 text-gray-700 hover:text-[#7B1E2B] hover:bg-[#FDF3D5] transition-colors"
                     >
                       {cat}
@@ -426,7 +421,7 @@ export default function Navbar() {
                 {CATEGORIES.map((cat) => (
                   <NavLink
                     key={cat}
-                    to={`/products/${CATEGORY_MAP[cat]}`}
+                    to={`/products/category/${CATEGORY_MAP[cat]}`}
                     className="pl-4 text-gray-600"
                     onClick={() => setIsMenuOpen(false)}
                   >

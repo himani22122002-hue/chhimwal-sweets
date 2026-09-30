@@ -1,5 +1,7 @@
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 
+// Layouts
 import MainLayout from "../layouts/MainLayout";
 import AdminLayout from "../layouts/AdminLayout";
 
@@ -12,8 +14,8 @@ import Checkout from "../pages/Checkout";
 import OrderSuccess from "../pages/OrderSuccess";
 import OrderDetails from "../pages/OrderDetails";
 import About from "../pages/About";
-import Contact from "../pages/Contact";
 import Gallery from "../pages/Gallery";
+import Contact from "../pages/Contact";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import ForgotPassword from "../pages/ForgotPassword";
@@ -23,73 +25,138 @@ import NotFound from "../pages/NotFound";
 
 // Admin Pages
 import AdminDashboard from "../pages/admin/AdminDashboard";
-import AdminProducts from "../pages/admin/Products";
-import ProductForm from "../pages/admin/ProductForm";
-import Orders from "../pages/admin/Orders";
+import AdminCustomers from "../pages/admin/Customers";
 import AdminGallery from "../pages/admin/Gallery";
-import Reviews from "../pages/admin/Reviews";
-import Customers from "../pages/admin/Customers";
-import Settings from "../pages/admin/Settings";
+import AdminOrders from "../pages/admin/Orders";
+import ProductForm from "../pages/admin/ProductForm";
+import AdminProducts from "../pages/admin/Products";
+import AdminReviews from "../pages/admin/Reviews";
+import AdminSettings from "../pages/admin/Settings";
 
-export default function AppRoutes() {
+const AppRoutes = () => {
   return (
     <Routes>
-
       {/* ================= CUSTOMER ROUTES ================= */}
-      <Route path="/" element={<MainLayout />}>
 
-        <Route index element={<Home />} />
+      <Route element={<MainLayout />}>
+        {/* Home */}
+        <Route path="/" element={<Home />} />
 
+        {/* Products */}
         <Route path="products" element={<Products />} />
-        <Route path="products/:id" element={<ProductDetails />} />
 
+        {/* Category Products */}
+        <Route
+          path="products/category/:category"
+          element={<Products />}
+        />
+
+        {/* Product Details */}
+        <Route
+          path="products/:id"
+          element={<ProductDetails />}
+        />
+
+        {/* Cart & Checkout */}
         <Route path="cart" element={<Cart />} />
         <Route path="checkout" element={<Checkout />} />
-        <Route path="order-success" element={<OrderSuccess />} />
 
-        {/* Order Details */}
-        <Route path="orders/:id" element={<OrderDetails />} />
+        {/* Order */}
+        <Route
+          path="order-success"
+          element={<OrderSuccess />}
+        />
 
+        <Route
+          path="orders/:id"
+          element={<OrderDetails />}
+        />
+
+        {/* Other Pages */}
         <Route path="about" element={<About />} />
         <Route path="gallery" element={<Gallery />} />
         <Route path="contact" element={<Contact />} />
 
+        {/* Authentication */}
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
-        <Route path="forgot-password" element={<ForgotPassword />} />
+        <Route
+          path="forgot-password"
+          element={<ForgotPassword />}
+        />
 
+        {/* User */}
         <Route path="wishlist" element={<Wishlist />} />
-
-        {/* User Profile */}
         <Route path="profile" element={<Profile />} />
 
-        {/* Customer 404 */}
+        {/* Not Found */}
         <Route path="*" element={<NotFound />} />
-
       </Route>
-
 
       {/* ================= ADMIN ROUTES ================= */}
+
       <Route path="/admin" element={<AdminLayout />}>
+        {/* Dashboard */}
+        <Route
+          index
+          element={<AdminDashboard />}
+        />
 
-        <Route index element={<AdminDashboard />} />
+        <Route
+          path="dashboard"
+          element={<AdminDashboard />}
+        />
 
-        <Route path="products" element={<AdminProducts />} />
-        <Route path="products/add" element={<ProductForm />} />
-        <Route path="products/edit/:id" element={<ProductForm />} />
+        {/* Products */}
+        <Route
+          path="products"
+          element={<AdminProducts />}
+        />
 
-        <Route path="orders" element={<Orders />} />
+        {/* Add Product */}
+        <Route
+          path="products/add"
+          element={<ProductForm />}
+        />
 
-        <Route path="gallery" element={<AdminGallery />} />
+        {/* Edit Product */}
+        <Route
+          path="products/edit/:id"
+          element={<ProductForm />}
+        />
 
-        <Route path="reviews" element={<Reviews />} />
+        {/* Orders */}
+        <Route
+          path="orders"
+          element={<AdminOrders />}
+        />
 
-        <Route path="customers" element={<Customers />} />
+        {/* Gallery */}
+        <Route
+          path="gallery"
+          element={<AdminGallery />}
+        />
 
-        <Route path="settings" element={<Settings />} />
+        {/* Reviews */}
+        <Route
+          path="reviews"
+          element={<AdminReviews />}
+        />
 
+        {/* Customers */}
+        <Route
+          path="customers"
+          element={<AdminCustomers />}
+        />
+
+        {/* Settings */}
+        <Route
+          path="settings"
+          element={<AdminSettings />}
+        />
       </Route>
-
     </Routes>
   );
-}
+};
+
+export default AppRoutes;

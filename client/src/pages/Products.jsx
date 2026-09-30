@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import ProductCard from "../components/products/ProductCard";
 import { ProductService } from "../services/ProductService";
 
 const Products = () => {
-  const [searchParams] = useSearchParams();
-  const categoryId = searchParams.get("category");
+  const { category } = useParams();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,9 +17,9 @@ const Products = () => {
         setError("");
 
         const data = await ProductService.getProducts({
-          categoryId: categoryId || undefined,
           active: true,
           limit: 50,
+          ...(category ? { categorySlug: category } : {}),
         });
 
         setProducts(data?.products || []);
@@ -33,19 +32,26 @@ const Products = () => {
     };
 
     loadProducts();
-  }, [categoryId]);
+  }, [category]);
+
+  const categoryName = category
+    ? category
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")
+    : "All Products";
 
   return (
     <div className="min-h-screen bg-[#FFF8E7] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-
         <div className="mb-10">
           <p className="text-[#7B1E2B]/70 mb-2">
             Home / Products
+            {category && ` / ${categoryName}`}
           </p>
 
           <h1 className="text-4xl font-bold text-[#7B1E2B]">
-            {categoryId ? "Category Products" : "All Products"}
+            {categoryName}
           </h1>
         </div>
 
