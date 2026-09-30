@@ -1,4 +1,7 @@
-const API_URL = "/api/v1/products";
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+const PRODUCTS_API = `${API_URL}/api/v1/products`;
 
 export const ProductService = {
   getProducts: async (params = {}) => {
@@ -11,7 +14,9 @@ export const ProductService = {
     });
 
     const response = await fetch(
-      `${API_URL}${query.toString() ? `?${query.toString()}` : ""}`
+      `${PRODUCTS_API}${
+        query.toString() ? `?${query.toString()}` : ""
+      }`
     );
 
     if (!response.ok) {
@@ -24,7 +29,7 @@ export const ProductService = {
   },
 
   getProductById: async (id) => {
-    const response = await fetch(`${API_URL}/${id}`);
+    const response = await fetch(`${PRODUCTS_API}/${id}`);
 
     if (!response.ok) {
       throw new Error("Failed to fetch product");
