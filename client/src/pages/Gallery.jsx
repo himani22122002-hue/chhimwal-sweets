@@ -1,146 +1,211 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
-import { galleryData } from "../data/gallery";
+import { getGalleryImages } from "../services/GalleryService";
 import GalleryGrid from "../components/gallery/GalleryGrid";
 import Lightbox from "../components/gallery/Lightbox";
-import UploadModal from "../components/gallery/UploadModal";
 
 const Gallery = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedItem, setSelectedItem] = useState(null);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState([]);
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    const saved = localStorage.getItem("chhimwal-uploaded-images");
-    if (saved) setUploadedImages(JSON.parse(saved));
-  }, []);
+  const loadImages = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-  const allItems = useMemo(() => {
-    return [...galleryData, ...uploadedImages];
-  }, [uploadedImages]);
+      const data = await getGalleryImages();
 
-  const categories = useMemo(() => {
-    return ["All", ...new Set(allItems.map((item) => item.category))];
-  }, [allItems]);
-
-  const filteredItems = useMemo(() => {
-    return activeCategory === "All"
-      ? allItems
-      : allItems.filter((item) => item.category === activeCategory);
-  }, [activeCategory, allItems]);
-
-  const handleUpload = (newImage) => {
-    const newEntry = { ...newImage, id: Date.now(), isUploaded: true };
-    const updated = [...uploadedImages, newEntry];
-    setUploadedImages(updated);
-    localStorage.setItem("chhimwal-uploaded-images", JSON.stringify(updated));
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this image?")) {
-      const updated = uploadedImages.filter((i) => i.id !== id);
-      setUploadedImages(updated);
-      localStorage.setItem("chhimwal-uploaded-images", JSON.stringify(updated));
+      setImages(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to load gallery images:", err);
+      setError(
+        err.message || "Unable to load gallery images."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    loadImages();
+  }, []);
+
+  const categories = useMemo(() => {
+    return [
+      "All",
+      ...new Set(
+        images
+          .map((item) => item.category)
+          .filter(Boolean)
+      ),
+    ];
+  }, [images]);
+
+  const filteredItems = useMemo(() => {
+    if (activeCategory === "All") {
+      return images;
+    }
+
+    return images.filter(
+      (item) => item.category === activeCategory
+    );
+  }, [images, activeCategory]);
+
   const handleNext = () => {
-    const currentIndex = filteredItems.findIndex((i) => i.id === selectedItem.id);
-    const nextIndex = (currentIndex + 1) % filteredItems.length;
+    if (!selectedItem || filteredItems.length === 0) {
+      return;
+    }
+
+    const currentIndex = filteredItems.findIndex(
+      (item) => item.id === selectedItem.id
+    );
+
+    const nextIndex =
+      (currentIndex + 1) % filteredItems.length;
+
     setSelectedItem(filteredItems[nextIndex]);
   };
 
   const handlePrev = () => {
-    const currentIndex = filteredItems.findIndex((i) => i.id === selectedItem.id);
-    const prevIndex = (currentIndex - 1 + filteredItems.length) % filteredItems.length;
+    if (!selectedItem || filteredItems.length === 0) {
+      return;
+    }
+
+    const currentIndex = filteredItems.findIndex(
+      (item) => item.id === selectedItem.id
+    );
+
+    const prevIndex =
+      (currentIndex - 1 + filteredItems.length) %
+      filteredItems.length;
+
     setSelectedItem(filteredItems[prevIndex]);
   };
 
   return (
-    <div className="bg-[#FFF8E7] min-h-screen py-12 px-6">
-      <div className="max-w-7xl mx-auto text-center mb-16 relative">
-        <button
-          onClick={() => setIsUploadModalOpen(true)}
-          className="absolute top-0 right-0 bg-[#D4AF37] text-white px-6 py-2 rounded-full hover:bg-[#D4AF37]/90"
-        >
-          Upload Images
-        </button>
+    <div className="min-h-screen bg-[#FFF8E7] px-6 py-12">
+      {/* Header */}
+      <div className="relative mx-auto mb-16 max-w-7xl text-center">
         <motion.p
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-[#7B1E2B] font-medium mb-2"
+          className="mb-2 font-medium text-[#7B1E2B]"
         >
           Home / Gallery
         </motion.p>
+
         <motion.h1
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-5xl font-bold text-[#7B1E2B] mb-4"
+          className="mb-4 text-5xl font-bold text-[#7B1E2B]"
         >
           Gallery
         </motion.h1>
+
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="text-[#7B1E2B]/80 max-w-2xl mx-auto"
+          className="mx-auto max-w-2xl text-[#7B1E2B]/80"
         >
-          Explore the rich tradition and authentic taste of Chhimwal Sweets through our handcrafted delicacies.
+          Explore the rich tradition and authentic taste of
+          Chhimwal Sweets through our handcrafted delicacies.
         </motion.p>
       </div>
 
-      <div className="max-w-7xl mx-auto mb-12 flex flex-wrap justify-center gap-4">
-        {categories.map((category) => (
-          <button
-            key={category}
-            onClick={() => setActiveCategory(category)}
-            className={`px-6 py-2 rounded-full transition-all duration-300 border ${
-              activeCategory === category
-                ? "bg-[#7B1E2B] text-white border-[#7B1E2B]"
-                : "bg-[#FFF8E7] text-[#7B1E2B] border-[#7B1E2B] hover:bg-[#7B1E2B]/10"
-            }`}
-          >
-            {category}
-          </button>
-        ))}
-      </div>
+      {/* Categories */}
+      {categories.length > 1 && (
+        <div className="mx-auto mb-12 flex max-w-7xl flex-wrap justify-center gap-4">
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => setActiveCategory(category)}
+              className={`rounded-full border px-6 py-2 transition-all duration-300 ${
+                activeCategory === category
+                  ? "border-[#7B1E2B] bg-[#7B1E2B] text-white"
+                  : "border-[#7B1E2B] bg-[#FFF8E7] text-[#7B1E2B] hover:bg-[#7B1E2B]/10"
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+      )}
 
-      <div className="max-w-7xl mx-auto">
-        <GalleryGrid
-          items={filteredItems}
-          onImageClick={setSelectedItem}
-          onDelete={(id) => {
-            const item = allItems.find(i => i.id === id);
-            if (item.isUploaded) handleDelete(id);
-          }}
-        />
-      </div>
+      {/* Error */}
+      {error && (
+        <div className="mx-auto mb-8 max-w-2xl rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-600">
+          {error}
+        </div>
+      )}
 
-      <div className="max-w-7xl mx-auto mt-20 py-16 text-center border-t border-[#7B1E2B]/20">
-        <h2 className="text-3xl font-bold text-[#7B1E2B] mb-6">
+      {/* Loading */}
+      {loading ? (
+        <div className="flex min-h-[300px] items-center justify-center">
+          <p className="text-lg text-[#7B1E2B]">
+            Loading gallery...
+          </p>
+        </div>
+      ) : filteredItems.length === 0 ? (
+        /* Empty State */
+        <div className="mx-auto flex min-h-[300px] max-w-xl flex-col items-center justify-center rounded-xl bg-white p-10 text-center shadow">
+          <div className="mb-4 text-5xl">🖼️</div>
+
+          <h2 className="text-2xl font-bold text-[#7B1E2B]">
+            No Images Yet
+          </h2>
+
+          <p className="mt-2 text-gray-500">
+            Gallery images will appear here when our admin
+            uploads them.
+          </p>
+        </div>
+      ) : (
+        /* Gallery */
+        <div className="mx-auto max-w-7xl">
+          <GalleryGrid
+            items={filteredItems}
+            onImageClick={setSelectedItem}
+          />
+        </div>
+      )}
+
+      {/* Bottom CTA */}
+      <div className="mx-auto mt-20 max-w-7xl border-t border-[#7B1E2B]/20 py-16 text-center">
+        <h2 className="mb-6 text-3xl font-bold text-[#7B1E2B]">
           Craving Authentic Kumaoni Sweets?
         </h2>
+
         <div className="flex justify-center gap-4">
-          <button className="px-8 py-3 bg-[#D4AF37] text-white rounded-full font-semibold hover:bg-[#D4AF37]/90 transition">
+          <button
+            className="rounded-full bg-[#D4AF37] px-8 py-3 font-semibold text-white transition hover:bg-[#D4AF37]/90"
+            onClick={() => {
+              window.location.href = "/products";
+            }}
+          >
             Shop Now
           </button>
-          <button className="px-8 py-3 border border-[#7B1E2B] text-[#7B1E2B] rounded-full font-semibold hover:bg-[#7B1E2B] hover:text-white transition">
+
+          <button
+            className="rounded-full border border-[#7B1E2B] px-8 py-3 font-semibold text-[#7B1E2B] transition hover:bg-[#7B1E2B] hover:text-white"
+            onClick={() => {
+              window.location.href = "/contact";
+            }}
+          >
             Contact Us
           </button>
         </div>
       </div>
 
+      {/* Lightbox */}
       <Lightbox
         selectedItem={selectedItem}
         onClose={() => setSelectedItem(null)}
         onNext={handleNext}
         onPrev={handlePrev}
-      />
-      <UploadModal
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-        onUpload={handleUpload}
       />
     </div>
   );

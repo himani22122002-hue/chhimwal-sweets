@@ -1,24 +1,60 @@
-const STORAGE_KEY = 'chhimwal_sweets_gallery';
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-export const getGalleryImages = () => {
-  const data = localStorage.getItem(STORAGE_KEY);
-  return data ? JSON.parse(data) : [];
-};
+const GALLERY_API = `${API_URL}/api/v1/gallery`;
 
-export const saveGalleryImage = (image) => {
-  const images = getGalleryImages();
-  if (image.id) {
-    const updatedImages = images.map((img) => (img.id === image.id ? image : img));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedImages));
-  } else {
-    const newImage = { ...image, id: Date.now().toString(), date: new Date().toISOString() };
-    images.push(newImage);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(images));
+export const getGalleryImages = async () => {
+  const response = await fetch(GALLERY_API);
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result?.message || "Failed to fetch gallery images"
+    );
   }
+
+  return result?.data || [];
 };
 
-export const deleteGalleryImage = (id) => {
-  const images = getGalleryImages();
-  const updatedImages = images.filter((img) => img.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedImages));
+export const saveGalleryImage = async (formData, id = null) => {
+  const url = id
+    ? `${GALLERY_API}/${id}`
+    : GALLERY_API;
+
+  const response = await fetch(url, {
+    method: id ? "PUT" : "POST",
+    credentials: "include",
+    body: formData,
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result?.message || "Failed to save gallery image"
+    );
+  }
+
+  return result?.data;
+};
+
+export const deleteGalleryImage = async (id) => {
+  const response = await fetch(
+    `${GALLERY_API}/${id}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result?.message || "Failed to delete gallery image"
+    );
+  }
+
+  return result?.data;
 };

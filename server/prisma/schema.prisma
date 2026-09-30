@@ -183,6 +183,7 @@ model Review {
 model Gallery {
   id        String   @id @default(uuid())
   image     String
+  publicId  String?
   title     String
   category  String
   active    Boolean  @default(true)
@@ -191,7 +192,6 @@ model Gallery {
 
   @@map("gallery")
 }
-
 model Address {
   id        String   @id @default(uuid())
   userId    String
