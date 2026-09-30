@@ -70,30 +70,50 @@ const AdminDashboard = () => {
           reviewsResult,
           customersResult,
         ] = await Promise.all([
-          ProductService.getProducts(),
+          ProductService.getProducts({
+            active: true,
+            limit: 100,
+          }),
           getOrders(),
           getApiData(`${API_URL}/api/v1/reviews`),
           getApiData(`${API_URL}/api/v1/users/customers`),
         ]);
 
-        const extractArray = (result) => {
-          if (Array.isArray(result)) return result;
-          if (Array.isArray(result?.data)) return result.data;
-          if (Array.isArray(result?.data?.data)) {
-            return result.data.data;
-          }
-          return [];
-        };
+        const products = Array.isArray(productsResult?.products)
+          ? productsResult.products
+          : Array.isArray(productsResult)
+          ? productsResult
+          : [];
+
+        const orders = Array.isArray(ordersResult)
+          ? ordersResult
+          : Array.isArray(ordersResult?.data)
+          ? ordersResult.data
+          : [];
+
+        const reviews = Array.isArray(reviewsResult)
+          ? reviewsResult
+          : Array.isArray(reviewsResult?.data)
+          ? reviewsResult.data
+          : [];
+
+        const customers = Array.isArray(customersResult)
+          ? customersResult
+          : Array.isArray(customersResult?.data)
+          ? customersResult.data
+          : [];
 
         setData({
-          products: extractArray(productsResult),
-          orders: extractArray(ordersResult),
-          reviews: extractArray(reviewsResult),
-          customers: extractArray(customersResult),
+          products,
+          orders,
+          reviews,
+          customers,
         });
       } catch (err) {
         console.error("Dashboard loading error:", err);
-        setError(err.message || "Failed to load dashboard data.");
+        setError(
+          err.message || "Failed to load dashboard data."
+        );
       } finally {
         setLoading(false);
       }
@@ -171,14 +191,38 @@ const AdminDashboard = () => {
     );
   };
 
+  const getProductStock = (product) => {
+    if (product?.stock !== undefined) {
+      return Number(product.stock);
+    }
+
+    if (
+      Array.isArray(product?.variants) &&
+      product.variants.length > 0
+    ) {
+      return product.variants.reduce(
+        (total, variant) =>
+          total + Number(variant?.stock || 0),
+        0
+      );
+    }
+
+    return 0;
+  };
+
   // =========================
   // METRICS
   // =========================
 
-  const totalRevenue = data.orders.reduce(
-    (sum, order) => sum + getOrderTotal(order),
-    0
-  );
+  const totalRevenue = data.orders
+    .filter(
+      (order) =>
+        getOrderStatus(order) !== "CANCELLED"
+    )
+    .reduce(
+      (sum, order) => sum + getOrderTotal(order),
+      0
+    );
 
   const totalOrders = data.orders.length;
   const totalProducts = data.products.length;
@@ -217,8 +261,7 @@ const AdminDashboard = () => {
 
   const lowStockProducts = data.products
     .filter(
-      (product) =>
-        Number(product?.stock || 0) < 10
+      (product) => getProductStock(product) < 10
     )
     .slice(0, 5);
 
@@ -257,30 +300,41 @@ const AdminDashboard = () => {
   const monthlySalesMap = {};
 
   data.orders.forEach((order) => {
+    if (getOrderStatus(order) === "CANCELLED") {
+      return;
+    }
+
     const date = getOrderDate(order);
 
     if (!date) return;
 
-    const month = new Date(date).toLocaleString(
+    const dateObject = new Date(date);
+
+    const monthKey = `${dateObject.getFullYear()}-${String(
+      dateObject.getMonth() + 1
+    ).padStart(2, "0")}`;
+
+    const month = dateObject.toLocaleString(
       "en-IN",
       {
         month: "short",
       }
     );
 
-    if (!monthlySalesMap[month]) {
-      monthlySalesMap[month] = 0;
+    if (!monthlySalesMap[monthKey]) {
+      monthlySalesMap[monthKey] = {
+        month,
+        sales: 0,
+      };
     }
 
-    monthlySalesMap[month] += getOrderTotal(order);
+    monthlySalesMap[monthKey].sales +=
+      getOrderTotal(order);
   });
 
-  const salesData = Object.entries(
+  const salesData = Object.values(
     monthlySalesMap
-  ).map(([month, sales]) => ({
-    month,
-    sales,
-  }));
+  );
 
   // =========================
   // ORDER STATUS
@@ -304,7 +358,10 @@ const AdminDashboard = () => {
   const statusData = [
     {
       name: "Pending",
-      value: pendingOrders,
+      value: data.orders.filter(
+        (order) =>
+          getOrderStatus(order) === "PENDING"
+      ).length,
     },
     {
       name: "Processing",
@@ -404,7 +461,6 @@ const AdminDashboard = () => {
       {/* ================= CHARTS ================= */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-
         {/* SALES */}
         <div className="bg-white p-6 rounded-3xl shadow-md">
           <h2 className="text-xl font-bold mb-4">
@@ -429,9 +485,9 @@ const AdminDashboard = () => {
 
                 <Tooltip
                   formatter={(value) => [
-                    `₹${Number(value).toLocaleString(
-                      "en-IN"
-                    )}`,
+                    `₹${Number(
+                      value
+                    ).toLocaleString("en-IN")}`,
                     "Sales",
                   ]}
                 />
@@ -501,7 +557,6 @@ const AdminDashboard = () => {
       {/* ================= LISTS ================= */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-
         {/* RECENT ORDERS */}
         <div className="bg-white p-6 rounded-3xl shadow-md">
           <h2 className="text-xl font-bold mb-4">
@@ -526,9 +581,9 @@ const AdminDashboard = () => {
 
                 <p className="text-sm text-gray-500">
                   {getCustomerName(order)} • ₹
-                  {getOrderTotal(order).toLocaleString(
-                    "en-IN"
-                  )}
+                  {getOrderTotal(
+                    order
+                  ).toLocaleString("en-IN")}
                 </p>
 
                 <p className="text-xs text-gray-400 mt-1">
@@ -562,7 +617,7 @@ const AdminDashboard = () => {
                   </p>
 
                   <p className="text-sm text-red-500">
-                    {product?.stock || 0} left
+                    {getProductStock(product)} left
                   </p>
                 </div>
               )
@@ -590,12 +645,15 @@ const AdminDashboard = () => {
                   <p className="font-semibold">
                     {review?.customer ||
                       review?.user?.fullName ||
+                      review?.name ||
                       "Customer"}
                   </p>
 
                   <p className="text-sm text-gray-500">
-                    {review?.product || "Product"} •{" "}
-                    {review?.rating || 0} ⭐
+                    {review?.product ||
+                      review?.product?.name ||
+                      "Product"}{" "}
+                    • {review?.rating || 0} ⭐
                   </p>
                 </div>
               )
@@ -603,7 +661,7 @@ const AdminDashboard = () => {
           )}
         </div>
 
-        {/* QUICK STATS */}
+        {/* ORDER SUMMARY */}
         <div className="bg-white p-6 rounded-3xl shadow-md">
           <h2 className="text-xl font-bold mb-4">
             Order Summary
@@ -612,27 +670,43 @@ const AdminDashboard = () => {
           <div className="space-y-4">
             <div className="flex justify-between">
               <span>Pending</span>
-              <strong>{pendingOrders}</strong>
+              <strong>
+                {
+                  data.orders.filter(
+                    (order) =>
+                      getOrderStatus(order) ===
+                      "PENDING"
+                  ).length
+                }
+              </strong>
             </div>
 
             <div className="flex justify-between">
               <span>Processing</span>
-              <strong>{processingOrders}</strong>
+              <strong>
+                {processingOrders}
+              </strong>
             </div>
 
             <div className="flex justify-between">
               <span>Shipped</span>
-              <strong>{shippedOrders}</strong>
+              <strong>
+                {shippedOrders}
+              </strong>
             </div>
 
             <div className="flex justify-between">
               <span>Delivered</span>
-              <strong>{deliveredOrders}</strong>
+              <strong>
+                {deliveredOrders}
+              </strong>
             </div>
 
             <div className="flex justify-between">
               <span>Cancelled</span>
-              <strong>{cancelledOrders}</strong>
+              <strong>
+                {cancelledOrders}
+              </strong>
             </div>
           </div>
         </div>
