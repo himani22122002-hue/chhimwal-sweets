@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const emptyForm = {
   label: "Home",
   fullName: "",
@@ -31,9 +34,12 @@ const AddressBook = () => {
       setLoading(true);
       setError("");
 
-      const response = await fetch("/api/v1/addresses", {
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${API_URL}/api/v1/addresses`,
+        {
+          credentials: "include",
+        }
+      );
 
       const result = await response.json();
 
@@ -115,8 +121,8 @@ const AddressBook = () => {
       setSuccess("");
 
       const url = editingId
-        ? `/api/v1/addresses/${editingId}`
-        : "/api/v1/addresses";
+        ? `${API_URL}/api/v1/addresses/${editingId}`
+        : `${API_URL}/api/v1/addresses`;
 
       const method = editingId ? "PUT" : "POST";
 
@@ -171,7 +177,7 @@ const AddressBook = () => {
       setSuccess("");
 
       const response = await fetch(
-        `/api/v1/addresses/${id}`,
+        `${API_URL}/api/v1/addresses/${id}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -210,21 +216,18 @@ const AddressBook = () => {
 
   return (
     <div>
-      {/* Success Message */}
       {success && (
         <div className="mb-5 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl">
           {success}
         </div>
       )}
 
-      {/* Error Message */}
       {error && (
         <div className="mb-5 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl">
           {error}
         </div>
       )}
 
-      {/* Address List */}
       {!showForm && (
         <div className="grid md:grid-cols-2 gap-6">
           {addresses.map((address) => (
@@ -287,7 +290,6 @@ const AddressBook = () => {
             </motion.div>
           ))}
 
-          {/* Add Address */}
           <button
             onClick={handleAdd}
             className="min-h-[220px] border-2 border-dashed border-[#7B1E2B]/30 rounded-3xl p-6 text-[#7B1E2B] hover:border-[#7B1E2B] hover:bg-[#FFF8E7] transition"
@@ -297,7 +299,6 @@ const AddressBook = () => {
         </div>
       )}
 
-      {/* Add / Edit Form */}
       {showForm && (
         <motion.form
           initial={{ opacity: 0, y: 15 }}
@@ -310,7 +311,6 @@ const AddressBook = () => {
           </h2>
 
           <div className="grid md:grid-cols-2 gap-5">
-            {/* Label */}
             <div>
               <label className="block text-sm text-gray-500 mb-2">
                 Address Label
@@ -328,7 +328,6 @@ const AddressBook = () => {
               </select>
             </div>
 
-            {/* Full Name */}
             <div>
               <label className="block text-sm text-gray-500 mb-2">
                 Full Name
@@ -345,7 +344,6 @@ const AddressBook = () => {
               />
             </div>
 
-            {/* Phone */}
             <div>
               <label className="block text-sm text-gray-500 mb-2">
                 Mobile Number
@@ -362,7 +360,6 @@ const AddressBook = () => {
               />
             </div>
 
-            {/* House */}
             <div>
               <label className="block text-sm text-gray-500 mb-2">
                 House / Flat No.
@@ -379,7 +376,6 @@ const AddressBook = () => {
               />
             </div>
 
-            {/* Street */}
             <div>
               <label className="block text-sm text-gray-500 mb-2">
                 Street / Area
@@ -396,7 +392,6 @@ const AddressBook = () => {
               />
             </div>
 
-            {/* Landmark */}
             <div>
               <label className="block text-sm text-gray-500 mb-2">
                 Landmark
@@ -412,7 +407,6 @@ const AddressBook = () => {
               />
             </div>
 
-            {/* City */}
             <div>
               <label className="block text-sm text-gray-500 mb-2">
                 City
@@ -429,7 +423,6 @@ const AddressBook = () => {
               />
             </div>
 
-            {/* State */}
             <div>
               <label className="block text-sm text-gray-500 mb-2">
                 State
@@ -446,7 +439,6 @@ const AddressBook = () => {
               />
             </div>
 
-            {/* PIN */}
             <div>
               <label className="block text-sm text-gray-500 mb-2">
                 PIN Code
@@ -465,7 +457,6 @@ const AddressBook = () => {
             </div>
           </div>
 
-          {/* Default Address */}
           <label className="flex items-center gap-3 mt-6 cursor-pointer">
             <input
               type="checkbox"
@@ -480,7 +471,6 @@ const AddressBook = () => {
             </span>
           </label>
 
-          {/* Buttons */}
           <div className="flex gap-3 mt-8">
             <button
               type="submit"
